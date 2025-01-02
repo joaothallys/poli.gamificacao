@@ -1,16 +1,9 @@
 import type { NextPage } from "next";
 import React, { useEffect } from "react";
-import { LeftBar } from "~/components/LeftBar";
-import { BottomBar } from "~/components/BottomBar";
 import { useBoundStore } from "~/hooks/useBoundStore";
-import Link from "next/link";
 import {
-  BronzeLeagueSvg,
   FirstPlaceSvg,
-  LeaderboardBannerSvg,
   LeaderboardExplanationSvg,
-  LockedLeaderboardSvg,
-  LockedLeagueSvg,
   SecondPlaceSvg,
   ThirdPlaceSvg,
 } from "~/components/Svgs";
