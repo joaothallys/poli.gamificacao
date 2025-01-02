@@ -137,7 +137,7 @@ const Leaderboard: NextPage = () => {
 
   return (
     <div>
-      <LeftBar selectedTab="Leaderboards" />
+      {/* <LeftBar selectedTab="Leaderboards" />
       <div className="flex justify-center gap-3 pt-14 md:ml-24 md:p-6 md:pt-10 lg:ml-64 lg:gap-12">
         <div className="flex w-full max-w-xl flex-col items-center gap-5 pb-28 md:px-5">
           {!leaderboardIsUnlocked && (
@@ -200,7 +200,7 @@ const Leaderboard: NextPage = () => {
         </div>
         {!leaderboardIsUnlocked && <LeaderboardExplanationSection />}
       </div>
-      <BottomBar selectedTab="Leaderboards" />
+      <BottomBar selectedTab="Leaderboards" /> */}
     </div>
   );
 };
