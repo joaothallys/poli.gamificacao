@@ -1,9 +1,16 @@
 import type { NextPage } from "next";
 import React, { useEffect } from "react";
+//import { LeftBar } from "~/components/LeftBar";
+//import { BottomBar } from "~/components/BottomBar";
 import { useBoundStore } from "~/hooks/useBoundStore";
+//import Link from "next/link";
 import {
+  //BronzeLeagueSvg,
   FirstPlaceSvg,
+  //LeaderboardBannerSvg,
   LeaderboardExplanationSvg,
+  //LockedLeaderboardSvg,
+  //LockedLeagueSvg,
   SecondPlaceSvg,
   ThirdPlaceSvg,
 } from "~/components/Svgs";
@@ -12,26 +19,26 @@ import { useRouter } from "next/router";
 import { useLeaderboardUsers } from "~/hooks/useLeaderboard";
 import Image from "next/image";
 
-const LeaderboardExplanationSection = () => {
-  return (
-    <article className="relative hidden h-fit w-96 shrink-0 gap-5 rounded-2xl border-2 border-gray-200 p-6 xl:flex">
-      <div className="flex flex-col gap-5">
-        <h2 className="font-bold uppercase text-gray-400">
-          What are leaderboards?
-        </h2>
-        <p className="font-bold text-gray-700">Do lessons. Earn XP. Compete.</p>
-        <p className="text-gray-400">
-          Earn XP through lessons, then compete with players in a weekly
-          leaderboard
-        </p>
-      </div>
+// const LeaderboardExplanationSection = () => {
+//   return (
+//     <article className="relative hidden h-fit w-96 shrink-0 gap-5 rounded-2xl border-2 border-gray-200 p-6 xl:flex">
+//       <div className="flex flex-col gap-5">
+//         <h2 className="font-bold uppercase text-gray-400">
+//           What are leaderboards?
+//         </h2>
+//         <p className="font-bold text-gray-700">Do lessons. Earn XP. Compete.</p>
+//         <p className="text-gray-400">
+//           Earn XP through lessons, then compete with players in a weekly
+//           leaderboard
+//         </p>
+//       </div>
 
-      <div className="w-10 shrink-0"></div>
+//       <div className="w-10 shrink-0"></div>
 
-      <LeaderboardExplanationSvg />
-    </article>
-  );
-};
+//       <LeaderboardExplanationSvg />
+//     </article>
+//   );
+// };
 
 type TimeLeftUnit = "days" | "hours" | "minutes";
 
@@ -61,51 +68,51 @@ const timeLeft = (): `${number} ${TimeLeftUnit}` => {
 
 const defaultPicture = "https://placekitten.com/100/100";
 
-const LeaderboardProfile = ({
-  place,
-  name,
-  xp,
-  isCurrentUser,
-}: {
-  place: number;
-  name: string;
-  xp: number;
-  isCurrentUser: boolean;
-}) => {
-  return (
-    <div
-      className={[
-        "flex items-center gap-5 rounded-2xl px-5 py-2 hover:bg-gray-100 md:mx-0",
-        isCurrentUser ? "bg-gray-200" : "",
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-4">
-        {place === 1 ? (
-          <FirstPlaceSvg />
-        ) : place === 2 ? (
-          <SecondPlaceSvg />
-        ) : place === 3 ? (
-          <ThirdPlaceSvg />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center font-bold text-green-700">
-            {place}
-          </div>
-        )}
-        <Image
-          width={48}
-          height={48}
-          className="h-12 w-12 rounded-full"
-          src={defaultPicture}
-          alt=""
-        />
-      </div>
-      <div className="grow overflow-hidden overflow-ellipsis font-bold">
-        {name}
-      </div>
-      <div className="shrink-0 text-gray-500">{`${xp} XP`}</div>
-    </div>
-  );
-};
+// const LeaderboardProfile = ({
+//   place,
+//   name,
+//   xp,
+//   isCurrentUser,
+// }: {
+//   place: number;
+//   name: string;
+//   xp: number;
+//   isCurrentUser: boolean;
+// }) => {
+//   return (
+//     <div
+//       className={[
+//         "flex items-center gap-5 rounded-2xl px-5 py-2 hover:bg-gray-100 md:mx-0",
+//         isCurrentUser ? "bg-gray-200" : "",
+//       ].join(" ")}
+//     >
+//       <div className="flex items-center gap-4">
+//         {place === 1 ? (
+//           <FirstPlaceSvg />
+//         ) : place === 2 ? (
+//           <SecondPlaceSvg />
+//         ) : place === 3 ? (
+//           <ThirdPlaceSvg />
+//         ) : (
+//           <div className="flex h-10 w-10 items-center justify-center font-bold text-green-700">
+//             {place}
+//           </div>
+//         )}
+//         <Image
+//           width={48}
+//           height={48}
+//           className="h-12 w-12 rounded-full"
+//           src={defaultPicture}
+//           alt=""
+//         />
+//       </div>
+//       <div className="grow overflow-hidden overflow-ellipsis font-bold">
+//         {name}
+//       </div>
+//       <div className="shrink-0 text-gray-500">{`${xp} XP`}</div>
+//     </div>
+//   );
+// };
 
 const Leaderboard: NextPage = () => {
   const router = useRouter();
@@ -119,14 +126,13 @@ const Leaderboard: NextPage = () => {
     }
   }, [loggedIn, router]);
 
-  const lessonsToUnlockLeaderboard = 10;
-  const lessonsRemainingToUnlockLeaderboard =
-    lessonsToUnlockLeaderboard - lessonsCompleted;
-  const leaderboardIsUnlocked = lessonsCompleted >= lessonsToUnlockLeaderboard;
+  //const lessonsToUnlockLeaderboard = 10;
+  //const lessonsRemainingToUnlockLeaderboard =lessonsToUnlockLeaderboard - lessonsCompleted;
+  //const leaderboardIsUnlocked = lessonsCompleted >= lessonsToUnlockLeaderboard;
 
-  const leaderboardLeague = "Bronze League";
+  //const leaderboardLeague = "Bronze League";
 
-  const leaderboardUsers = useLeaderboardUsers();
+  //const leaderboardUsers = useLeaderboardUsers();
 
   return (
     <div>
