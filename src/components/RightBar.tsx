@@ -626,7 +626,7 @@ const CreateAProfileSection = ({
 }) => {
   return (
     <article className="flex flex-col gap-5 rounded-2xl border-2 border-gray-200 p-6 font-bold">
-      <h2 className="text-xl">Create a profile to save your progress!</h2>
+      <h2 className="text-xl">Crie um perfil para salvar seu progresso!</h2>
       <button
         className="rounded-2xl border-b-4 border-green-600 bg-green-500 py-3 uppercase text-white transition hover:border-green-500 hover:bg-green-400"
         onClick={() => setLoginScreenState("SIGNUP")}

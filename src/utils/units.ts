@@ -19,7 +19,7 @@ export type TileType = Tile["type"];
 export const units: readonly Unit[] = [
   {
     unitNumber: 1,
-    description: "Form basic sentences, greet people",
+    description: "Forme frases básicas, cumprimente as pessoas",
     backgroundColor: "bg-[#58cc02]",
     textColor: "text-[#58cc02]",
     borderColor: "border-[#46a302]",
