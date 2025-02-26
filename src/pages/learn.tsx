@@ -629,7 +629,7 @@ const UnitHeader = ({
           <h2 className="text-2xl font-bold">Unit {unitNumber}</h2>
           <p className="text-lg">{description}</p>
         </div>
-        <Link
+        {/* <Link
           href={`https://duolingo.com/guidebook/${language.code}/${unitNumber}`}
           className={[
             "flex items-center gap-3 rounded-2xl border-2 border-b-4 p-3 transition hover:text-gray-100",
@@ -640,7 +640,7 @@ const UnitHeader = ({
           <span className="sr-only font-bold uppercase lg:not-sr-only">
             Guidebook
           </span>
-        </Link>
+        </Link> */}
       </header>
     </article>
   );
