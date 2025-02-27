@@ -31,7 +31,7 @@ export const RightBar = () => {
   const [streakShown, setStreakShown] = useState(false);
   const [now, setNow] = useState(dayjs());
 
-  const [gemsShown, setGemsShown] = useState(false);
+  const [gemsShown, setGemsShown] = useState(false); // add comentaario
 
   const [loginScreenState, setLoginScreenState] =
     useState<LoginScreenState>("HIDDEN");
