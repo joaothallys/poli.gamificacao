@@ -16,16 +16,18 @@ export type Tile =
 export type TileType = Tile["type"];
 
 export type Unitt = UnitTitle & {
+  unitNumber: number; // Adicione esta linha
   tiles: Tile[];
 };
 
 export const units: readonly Unitt[] = [
   {
+    unitNumber: 1, // Adicione esta linha
     description: "Troque em produtos e benefícios na loja.",
     backgroundColor: "bg-[#0000CB]",
     textColor: "text-[#58cc02]",
     borderColor: "border-[#0000CB]",
-    fixedText: "Faça missões e ganhe Policoins", // Adicionando o texto fixo
+    fixedText: "Faça missões e ganhe Policoins",
     tiles: [
       {
         type: "star",
@@ -43,5 +45,6 @@ export const units: readonly Unitt[] = [
       { type: "book", description: "A date" },
       { type: "trophy", description: "Unit 1 review" },
     ],
-  }
+  },
+  // Adicione outras unidades conforme necessário
 ];
