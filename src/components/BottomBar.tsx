@@ -48,7 +48,7 @@ export const useBottomBarItems = () => {
     },
     {
       name: "Loja",
-      href: "/shop",
+      href: "", // aqui seria o redirecionamento da pagina. ex: /shop
       icon: (
         <svg
           width="46"
