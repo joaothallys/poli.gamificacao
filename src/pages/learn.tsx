@@ -5,13 +5,14 @@ import { RightBar } from "~/components/RightBar";
 import { LeftBar } from "~/components/LeftBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
 
+
 const Learn: NextPage = () => {
   const { loginScreenState, setLoginScreenState } = useLoginScreen();
 
   return (
     <>
       <TopBar backgroundColor="bg-[#58cc02]" borderColor="border-[#46a302]" />
-      <LeftBar />
+      <LeftBar selectedTab="Learn" /> {/* Use o valor correto para selectedTab */}
 
       {/* Faixa azul com tamanho fixo e bordas arredondadas */}
       {/* <div className="bg-[#0000CB] text-white text-center flex flex-col items-center justify-center mx-auto mt-4 rounded-lg shadow-md w-[672px] h-[96px]">
@@ -29,7 +30,7 @@ const Learn: NextPage = () => {
 
       <div className="pt-[90px]"></div>
 
-      <BottomBar />
+      
       <LoginScreen
         loginScreenState={loginScreenState}
         setLoginScreenState={setLoginScreenState}

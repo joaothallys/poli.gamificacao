@@ -7,7 +7,7 @@ type BottomBarItem = {
   icon: JSX.Element;
 };
 
-export type Tab = "Home" | "Loja" | "Leaderboards";
+export type Tab = "Home" | "Loja" | "Leaderboards" | "Shop" | "Learn";
 
 export const useBottomBarItems = () => {
   const loggedIn = useBoundStore((x) => x.loggedIn);
@@ -48,7 +48,7 @@ export const useBottomBarItems = () => {
     },
     {
       name: "Loja",
-      href: "", // aqui seria o redirecionamento da pagina. ex: /shop // add mais comentarios
+      href: "/shop", // aqui seria o redirecionamento da pagina. ex: /shop // add mais comentarios
       icon: (
         <svg
           width="46"
