@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { LightningProgressSvg, TreasureProgressSvg } from "./Svgs";
+import Image from "next/image";
 
 export const RightBar = () => {
   return (
@@ -7,7 +6,7 @@ export const RightBar = () => {
       <div className="flex flex-col w-[672px] gap-6">
         <div className="bg-[#0000C8] text-white text-center py-4 px-6 rounded-lg">
           <h1 className="text-[24px] font-bold leading-[32px]">Faça missões e ganhe Policoins</h1>
-          <p className="text-sm">Troque em produtos e benefícios na loja.</p>
+          <p className="text-sm">Troque em produtos e.</p>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -64,18 +63,16 @@ const MissionSectionMarketing = () => {
           <div key={index} className="flex flex-col gap-2">
             <p className="text-gray-700 font-medium">{mission.text}</p>
             <div className="relative h-4 bg-gray-200 rounded-full w-full">
-              <div
-                className="absolute left-0 top-0 h-4 bg-[#0000C8] rounded-full"
-                style={{ width: `${mission.progress}%` }}
-              ></div>
+              <div className="absolute left-0 top-0 h-4 bg-[#0000C8] rounded-full" style={{ width: `${mission.progress}%` }}></div>
               <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">
                 {mission.current} / {mission.total}
               </div>
-              {/* Ícone do baú maior e ao final da barra de progresso */}
-              <img
+              <Image
                 src="/bau.svg"
                 alt="Baú de recompensa"
                 className="absolute right-[-10px] top-[-8px] h-8 w-8"
+                width={32}
+                height={32}
               />
             </div>
           </div>
@@ -84,8 +81,6 @@ const MissionSectionMarketing = () => {
     </div>
   );
 };
-
-
 
 const MissionSectionSales = () => {
   const salesMissions = [
@@ -108,10 +103,12 @@ const MissionSectionSales = () => {
               <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500">
                 {mission.current} / {mission.total}
               </div>
-              <img
+              <Image
                 src="/bau.svg"
                 alt="Baú de recompensa"
                 className="absolute right-[-10px] top-[-8px] h-8 w-8"
+                width={32}
+                height={32}
               />
             </div>
           </div>
