@@ -2,7 +2,6 @@ import Link from "next/link";
 import { CloseSvg } from "./Svgs";
 import type { ComponentProps } from "react";
 import React, { useEffect, useRef, useState } from "react";
-import { useBoundStore } from "~/hooks/useBoundStore";
 import { useRouter } from "next/router";
 
 export const FacebookLogoSvg = (props: ComponentProps<"svg">) => {
@@ -52,9 +51,7 @@ export type LoginScreenState = "HIDDEN" | "LOGIN" | "SIGNUP";
 
 export const useLoginScreen = () => {
   const router = useRouter();
-  const loggedIn = useBoundStore((x) => x.loggedIn);
   const queryState: LoginScreenState = (() => {
-    if (loggedIn) return "HIDDEN";
     if ("login" in router.query) return "LOGIN";
     if ("sign-up" in router.query) return "SIGNUP";
     return "HIDDEN";
@@ -72,28 +69,19 @@ export const LoginScreen = ({
   setLoginScreenState: React.Dispatch<React.SetStateAction<LoginScreenState>>;
 }) => {
   const router = useRouter();
-  const loggedIn = useBoundStore((x) => x.loggedIn);
-  const logIn = useBoundStore((x) => x.logIn);
-  const setUsername = useBoundStore((x) => x.setUsername);
-  const setName = useBoundStore((x) => x.setName);
-
   const [ageTooltipShown, setAgeTooltipShown] = useState(false);
-
   const nameInputRef = useRef<null | HTMLInputElement>(null);
 
   useEffect(() => {
-    if (loginScreenState !== "HIDDEN" && loggedIn) {
+    if (loginScreenState !== "HIDDEN") {
       setLoginScreenState("HIDDEN");
     }
-  }, [loginScreenState, loggedIn, setLoginScreenState]);
+  }, [loginScreenState, setLoginScreenState]);
 
   const logInAndSetUserProperties = () => {
-    const name =
-      nameInputRef.current?.value.trim() || Math.random().toString().slice(2);
-    const username = name.replace(/ +/g, "-");
-    setUsername(username);
-    setName(name);
-    logIn();
+    // const name =
+    //   nameInputRef.current?.value.trim() || Math.random().toString().slice(2);
+    //const username = name.replace(/ +/g, "-");
     void router.push("/learn");
   };
 

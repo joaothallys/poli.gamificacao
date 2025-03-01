@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ChevronLeftSvg, ChevronRightSvg } from "./Svgs";
 import React, { useRef } from "react";
 import languages from "~/utils/languages";
-import { useBoundStore } from "~/hooks/useBoundStore";
 import { Flag } from "./Flag";
 
 declare global {
@@ -80,8 +79,6 @@ const scrollCarouselRight = ({
 };
 
 export const LanguageCarousel = () => {
-  const setLanguage = useBoundStore((x) => x.setLanguage);
-
   const startIndexRef = useRef(0);
   const languagesContainer = useRef<null | HTMLDivElement>(null);
   const lastLanguageIndex = 19;
@@ -111,7 +108,6 @@ export const LanguageCarousel = () => {
                 key={language.code}
                 className="flex items-center gap-2"
                 href={"/learn"}
-                onClick={() => setLanguage(language)}
               >
                 <Flag language={language} width={40} />
                 <span className="text-sm font-bold uppercase">

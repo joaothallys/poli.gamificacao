@@ -15,14 +15,8 @@ export type Tile =
 
 export type TileType = Tile["type"];
 
-export type Unitt = UnitTitle & {
-  unitNumber: number; // Adicione esta linha
-  tiles: Tile[];
-};
-
-export const units: readonly Unitt[] = [
+export const units: readonly (UnitTitle & { tiles: Tile[] })[] = [
   {
-    unitNumber: 1, // Adicione esta linha
     description: "Troque em produtos e benefícios na loja.",
     backgroundColor: "bg-[#0000CB]",
     textColor: "text-[#58cc02]",

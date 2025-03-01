@@ -2,9 +2,8 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import type { ComponentProps } from "react";
 import React, { useState } from "react";
-import { useBoundStore } from "~/hooks/useBoundStore";
 import { Calendar } from "./Calendar";
-import { Flag } from "./Flag";
+//import { Flag } from "./Flag";
 import {
   FireSvg,
   GemSvg,
@@ -73,9 +72,10 @@ export const TopBar = ({
 }) => {
   const [menu, setMenu] = useState<MenuState>("HIDDEN");
   const [now, setNow] = useState(dayjs());
-  const streak = useBoundStore((x) => x.streak);
-  const lingots = useBoundStore((x) => x.lingots);
-  const language = useBoundStore((x) => x.language);
+  const streak = 5; // Valor estático para streak
+  const lingots = 10; // Valor estático para lingots
+  const language = { name: "English", code: "en" }; // Valor estático para language
+
   return (
     <header className="fixed z-20 h-[58px] w-full">
       <div
@@ -86,7 +86,7 @@ export const TopBar = ({
             setMenu((x) => (x === "LANGUAGES" ? "HIDDEN" : "LANGUAGES"))
           }
         >
-          <Flag language={language} width={45} />
+          {/* <Flag language={language} width={45} /> */}
           <span className="sr-only">See languages</span>
         </button>
 
@@ -132,9 +132,9 @@ export const TopBar = ({
                 return (
                   <div className="flex gap-5 p-5">
                     <div className="flex flex-col items-center justify-between gap-2">
-                      <div className="rounded-2xl border-4 border-blue-400">
+                      {/* <div className="rounded-2xl border-4 border-blue-400">
                         <Flag language={language} width={80} />
-                      </div>
+                      </div> */}
                       <span className="font-bold">{language.name}</span>
                     </div>
                     <Link
@@ -169,8 +169,7 @@ export const TopBar = ({
                     <div className="flex flex-col gap-3">
                       <h2 className="text-xl font-bold text-black">Lingots</h2>
                       <p className="text-sm font-normal text-gray-400">
-                        You have {lingots}{" "}
-                        {lingots === 1 ? "lingot" : "lingots"}.
+                        You have {lingots} lingots.
                       </p>
                       <Link
                         className="font-bold uppercase text-blue-400 transition hover:brightness-110"

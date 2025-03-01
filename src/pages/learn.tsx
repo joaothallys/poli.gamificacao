@@ -3,11 +3,8 @@ import { TopBar } from "~/components/TopBar";
 import { LeftBar } from "~/components/LeftBar";
 import { RightBar } from "~/components/RightBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
-import { useBoundStore } from "~/hooks/useBoundStore";
-import type { Tile, TileType, Unitt } from "~/utils/units"; // Corrigido aqui
-import { units } from "~/utils/units";
 
-type TileStatus = "LOCKED" | "ACTIVE" | "COMPLETE";
+//type TileStatus = "LOCKED" | "ACTIVE" | "COMPLETE";
 
 const Learn: NextPage = () => {
   const { loginScreenState, setLoginScreenState } = useLoginScreen();

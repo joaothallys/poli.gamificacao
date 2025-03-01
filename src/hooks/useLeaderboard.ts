@@ -1,12 +1,9 @@
 import { fakeUsers } from "~/utils/fakeUsers";
-import { useBoundStore } from "~/hooks/useBoundStore";
 
 export const useLeaderboardUsers = () => {
-  const xpThisWeek = useBoundStore((x) => x.xpThisWeek());
-  const name = useBoundStore((x) => x.name);
   const userInfo = {
-    name,
-    xp: xpThisWeek,
+    name: "Current User",
+    xp: 1500,
     isCurrentUser: true,
   } as const;
   return [...fakeUsers, userInfo].sort((a, b) => b.xp - a.xp);

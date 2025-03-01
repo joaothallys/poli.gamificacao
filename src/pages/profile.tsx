@@ -4,8 +4,8 @@ import { LeftBar } from "~/components/LeftBar";
 import {
   BronzeLeagueSvg,
   EditPencilSvg,
-  EmptyFireSvg,
-  FireSvg,
+  //EmptyFireSvg,
+  //FireSvg,
   LightningProgressSvg,
   EmptyMedalSvg,
   ProfileFriendsSvg,
@@ -13,9 +13,8 @@ import {
   SettingsGearSvg,
 } from "~/components/Svgs";
 import Link from "next/link";
-import { Flag } from "~/components/Flag";
-import { useBoundStore } from "~/hooks/useBoundStore";
-import { useEffect, useState } from "react";
+//import { Flag } from "~/components/Flag";
+import { useEffect } from "react";
 import { useRouter } from "next/router";
 
 const Profile: NextPage = () => {
@@ -27,7 +26,7 @@ const Profile: NextPage = () => {
         <div className="flex w-full max-w-4xl flex-col gap-5 p-5">
           <ProfileTopSection />
           <ProfileStatsSection />
-          <ProfileFriendsSection />
+          {/* <ProfileFriendsSection /> */}
         </div>
       </div>
       <div className="pt-[90px]"></div>
@@ -55,13 +54,13 @@ const ProfileTopBar = () => {
 
 const ProfileTopSection = () => {
   const router = useRouter();
-  const loggedIn = useBoundStore((x) => x.loggedIn);
-  const name = useBoundStore((x) => x.name);
-  const username = useBoundStore((x) => x.username);
-  const joinedAt = useBoundStore((x) => x.joinedAt).format("MMMM YYYY");
-  const followingCount = 0;
-  const followersCount = 0;
-  const language = useBoundStore((x) => x.language);
+  const loggedIn = true; // Valor estático para loggedIn
+  const name = "John Doe"; // Valor estático para name
+  const username = "johndoe"; // Valor estático para username
+  const joinedAt = "January 2022"; // Valor estático para joinedAt
+  const followingCount = 10; // Valor estático para followingCount
+  const followersCount = 5; // Valor estático para followersCount
+  //const language = { name: "English", code: "en" }; // Valor estático para language
 
   useEffect(() => {
     if (!loggedIn) {
@@ -90,7 +89,7 @@ const ProfileTopSection = () => {
           </div>
         </div>
 
-        <Flag language={language} width={40} />
+        {/* <Flag language={language} width={40} /> */}
       </div>
       <Link
         href="/settings/account"
@@ -104,22 +103,22 @@ const ProfileTopSection = () => {
 };
 
 const ProfileStatsSection = () => {
-  const streak = useBoundStore((x) => x.streak);
-  const totalXp = 125;
-  const league = "Bronze";
-  const top3Finishes = 0;
+  const streak = 5; // Valor estático para streak
+  const totalXp = 125; // Valor estático para totalXp
+  const league = "Bronze"; // Valor estático para league
+  const top3Finishes = 0; // Valor estático para top3Finishes
 
   return (
     <section>
       <h2 className="mb-5 text-2xl font-bold">Statistics</h2>
       <div className="grid grid-cols-2 gap-3">
         <div className="flex gap-2 rounded-2xl border-2 border-gray-200 p-2 md:gap-3 md:px-6 md:py-4">
-          {streak === 0 ? <EmptyFireSvg /> : <FireSvg />}
+          {/* {streak === 0 ? <EmptyFireSvg /> : <FireSvg />} */}
           <div className="flex flex-col">
             <span
               className={[
                 "text-xl font-bold",
-                streak === 0 ? "text-gray-400" : "",
+                // "text-gray-400" : "",
               ].join(" ")}
             >
               {streak}
@@ -166,42 +165,42 @@ const ProfileStatsSection = () => {
   );
 };
 
-const ProfileFriendsSection = () => {
-  const [state, setState] = useState<"FOLLOWING" | "FOLLOWERS">("FOLLOWING");
-  return (
-    <section>
-      <h2 className="mb-5 text-2xl font-bold">Friends</h2>
-      <div className="rounded-2xl border-2 border-gray-200">
-        <div className="flex">
-          <button
-            className={[
-              "flex w-1/2 items-center justify-center border-b-2 py-3 font-bold uppercase hover:border-blue-400 hover:text-blue-400",
-              state === "FOLLOWING"
-                ? "border-blue-400 text-blue-400"
-                : "border-gray-200 text-gray-400",
-            ].join(" ")}
-            onClick={() => setState("FOLLOWING")}
-          >
-            Following
-          </button>
-          <button
-            className={[
-              "flex w-1/2 items-center justify-center border-b-2 py-3 font-bold uppercase hover:border-blue-400 hover:text-blue-400",
-              state === "FOLLOWERS"
-                ? "border-blue-400 text-blue-400"
-                : "border-gray-200 text-gray-400",
-            ].join(" ")}
-            onClick={() => setState("FOLLOWERS")}
-          >
-            Followers
-          </button>
-        </div>
-        <div className="flex items-center justify-center py-10 text-center text-gray-500">
-          {state === "FOLLOWING"
-            ? "Not following anyone yet"
-            : "No followers yet"}
-        </div>
-      </div>
-    </section>
-  );
-};
+// const ProfileFriendsSection = () => {
+//   const [state, setState] = useState<"FOLLOWING" | "FOLLOWERS">("FOLLOWING");
+//   return (
+//     <section>
+//       <h2 className="mb-5 text-2xl font-bold">Friends</h2>
+//       <div className="rounded-2xl border-2 border-gray-200">
+//         <div className="flex">
+//           <button
+//             className={[
+//               "flex w-1/2 items-center justify-center border-b-2 py-3 font-bold uppercase hover:border-blue-400 hover:text-blue-400",
+//               state === "FOLLOWING"
+//                 ? "border-blue-400 text-blue-400"
+//                 : "border-gray-200 text-gray-400",
+//             ].join(" ")}
+//             onClick={() => setState("FOLLOWING")}
+//           >
+//             Following
+//           </button>
+//           <button
+//             className={[
+//               "flex w-1/2 items-center justify-center border-b-2 py-3 font-bold uppercase hover:border-blue-400 hover:text-blue-400",
+//               state === "FOLLOWERS"
+//                 ? "border-blue-400 text-blue-400"
+//                 : "border-gray-200 text-gray-400",
+//             ].join(" ")}
+//             onClick={() => setState("FOLLOWERS")}
+//           >
+//             Followers
+//           </button>
+//         </div>
+//         <div className="flex items-center justify-center py-10 text-center text-gray-500">
+//           {state === "FOLLOWING"
+//             ? "Not following anyone yet"
+//             : "No followers yet"}
+//         </div>
+//       </div>
+//     </section>
+//   );
+// };

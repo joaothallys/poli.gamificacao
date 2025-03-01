@@ -4,20 +4,16 @@ import { BottomBar } from "~/components/BottomBar";
 import { LeftBar } from "~/components/LeftBar";
 import { TopBar } from "~/components/TopBar";
 import { SettingsRightNav } from "~/components/SettingsRightNav";
-import { useBoundStore } from "~/hooks/useBoundStore";
 
 const Sound: NextPage = () => {
-  const soundEffects = useBoundStore((x) => x.soundEffects);
-  const setSoundEffects = useBoundStore((x) => x.setSoundEffects);
+  const soundEffects = true; // Valor estático para soundEffects
   const [localSoundEffects, setLocalSoundEffects] = useState(soundEffects);
 
-  const speakingExercises = useBoundStore((x) => x.speakingExercises);
-  const setSpeakingExercises = useBoundStore((x) => x.setSpeakingExercises);
+  const speakingExercises = true; // Valor estático para speakingExercises
   const [localSpeakingExercises, setLocalSpeakingExercises] =
     useState(speakingExercises);
 
-  const listeningExercises = useBoundStore((x) => x.listeningExercises);
-  const setListeningExercises = useBoundStore((x) => x.setListeningExercises);
+  const listeningExercises = true; // Valor estático para listeningExercises
   const [localListeningExercises, setLocalListeningExercises] =
     useState(listeningExercises);
 
@@ -50,9 +46,7 @@ const Sound: NextPage = () => {
           <button
             className="rounded-2xl border-b-4 border-green-600 bg-green-500 px-5 py-3 font-bold uppercase text-white transition hover:brightness-110 disabled:border-b-0 disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:brightness-100"
             onClick={() => {
-              setSoundEffects(localSoundEffects);
-              setSpeakingExercises(localSpeakingExercises);
-              setListeningExercises(localListeningExercises);
+              // Ação de salvar removida, pois os valores são estáticos
             }}
             disabled={
               localSoundEffects === soundEffects &&

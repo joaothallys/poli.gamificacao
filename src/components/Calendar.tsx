@@ -1,5 +1,4 @@
 import dayjs from "dayjs";
-import { useBoundStore } from "~/hooks/useBoundStore";
 import { ChevronLeftSvg, ChevronRightSvg } from "./Svgs";
 import { range } from "~/utils/array-utils";
 
@@ -33,7 +32,6 @@ export const Calendar = ({
   now: dayjs.Dayjs;
   setNow: React.Dispatch<React.SetStateAction<dayjs.Dayjs>>;
 }) => {
-  const isActiveDay = useBoundStore((x) => x.isActiveDay);
   const formattedNowMonth = now.format("MMMM YYYY");
   const staticNow = dayjs();
   const calendarDays = getCalendarDays(now);
@@ -72,8 +70,6 @@ export const Calendar = ({
           return (
             <div key={i} className="flex justify-between">
               {week.map((date, i) => {
-                const isActiveDate =
-                  date !== null && isActiveDay(now.date(date));
                 const isCurrentDate =
                   date === staticNow.date() &&
                   now.month() === staticNow.month() &&
@@ -83,11 +79,7 @@ export const Calendar = ({
                     key={i}
                     className={[
                       "flex h-9 w-9 items-center justify-center rounded-full",
-                      isActiveDate
-                        ? "bg-orange-400 text-white"
-                        : isCurrentDate
-                          ? "bg-gray-300 text-gray-600"
-                          : "",
+                      isCurrentDate ? "bg-gray-300 text-gray-600" : "",
                     ].join(" ")}
                   >
                     {date}

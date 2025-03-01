@@ -1,8 +1,7 @@
 import type { NextPage } from "next";
-import React, { useEffect } from "react";
+import React from "react";
 import { LeftBar } from "~/components/LeftBar";
 import { BottomBar } from "~/components/BottomBar";
-import { useBoundStore } from "~/hooks/useBoundStore";
 import Link from "next/link";
 import {
   BronzeLeagueSvg,
@@ -15,7 +14,7 @@ import {
   ThirdPlaceSvg,
 } from "~/components/Svgs";
 import dayjs from "dayjs";
-import { useRouter } from "next/router";
+//import { useRouter } from "next/router";
 import { useLeaderboardUsers } from "~/hooks/useLeaderboard";
 import Image from "next/image";
 
@@ -115,16 +114,9 @@ const LeaderboardProfile = ({
 };
 
 const Leaderboard: NextPage = () => {
-  const router = useRouter();
-  const loggedIn = useBoundStore((x) => x.loggedIn);
-
-  const lessonsCompleted = useBoundStore((x) => x.lessonsCompleted);
-
-  useEffect(() => {
-    if (!loggedIn) {
-      void router.push("/");
-    }
-  }, [loggedIn, router]);
+  //const router = useRouter();
+  //const loggedIn = true; // Valor estático para loggedIn
+  const lessonsCompleted = 5; // Valor estático para lessonsCompleted
 
   const lessonsToUnlockLeaderboard = 10;
   const lessonsRemainingToUnlockLeaderboard =
