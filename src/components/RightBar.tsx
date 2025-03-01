@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 export const RightBar = () => {
+  
   return (
     <div className="flex justify-center gap-6 p-6">
       <div className="flex flex-col w-[672px] gap-6">
