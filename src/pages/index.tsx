@@ -2,7 +2,7 @@ import { type NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import { GlobeSvg, CloseSvg } from "~/components/Svgs";
+import { GlobeSvg } from "~/components/Svgs"; // Removido CloseSvg não utilizado
 import { LanguageHeader } from "~/components/LanguageHeader";
 import _bgSnow from "../../public/bg-snow.svg";
 import type { StaticImageData } from "next/image";
@@ -21,7 +21,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
-      router.push("/learn");
+      router.push("/learn").catch(console.error);
     }
   }, [router]);
 
@@ -29,7 +29,7 @@ const Home: NextPage = () => {
     try {
       const response = await authService.login(email, password);
       if (response.authorized) {
-        router.push("/learn");
+        await router.push("/learn");
       } else {
         setError(response.message);
       }

@@ -2,28 +2,28 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 const withAuth = (WrappedComponent: React.ComponentType, isPublic: boolean = false) => {
-  const AuthComponent = (props: any) => {
+  const AuthComponent = (props: Record<string, unknown>) => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-      const userData = localStorage.getItem("user_data");
-      if (!userData && !isPublic) {
-        router.push("/");
-      } else {
-        const parsedUserData = JSON.parse(userData || "{}");
-        const isAdmin = parsedUserData.roles?.some((role: { name: string }) => role.name === "adm");
-
-        if (!isAdmin && !isPublic) {
+      const checkAuth = () => {
+        const userData = localStorage.getItem("user_data");
+        if (router.pathname === "/") {
+          localStorage.removeItem("user_data");
+          setIsLoading(false);
+        } else if (!userData && !isPublic) {
           router.push("/");
         } else {
           setIsLoading(false);
         }
-      }
+      };
+
+      checkAuth();
     }, [router, isPublic]);
 
     if (isLoading) {
-      return null; // Ou um componente de carregamento
+      return <div>Loading...</div>; // Ou um componente de carregamento
     }
 
     return <WrappedComponent {...props} />;
