@@ -1,7 +1,6 @@
 import axios from "axios";
 import type { AuthResponse, UserData } from "~/types/auth";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
 
 const authService = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
@@ -16,7 +15,7 @@ const authService = {
       params.append("email", email);
       params.append("password", password);
 
-      const loginResponse = await instance.post(`${API_URL}`, params);
+      const loginResponse = await instance.post(`${process.env.NEXT_PUBLIC_API_URL}`, params);
 
       if (loginResponse.status === 200 || loginResponse.status === 204) {
         const userData: UserData = loginResponse.data;
