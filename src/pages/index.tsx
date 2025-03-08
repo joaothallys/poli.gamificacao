@@ -9,6 +9,7 @@ import type { StaticImageData } from "next/image";
 import { LanguageCarousel } from "~/components/LanguageCarousel";
 import authService from "~/services/authService";
 import withAuth from "~/hoc/withAuth";
+import LoadingSpinner from "~/components/LoadingSpinner"; // Importando o componente de carregamento
 
 const bgSnow = _bgSnow as StaticImageData;
 
@@ -17,6 +18,7 @@ const Home: NextPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
@@ -26,6 +28,7 @@ const Home: NextPage = () => {
   }, [router]);
 
   const handleLogin = async () => {
+    setIsLoading(true); // Inicia o carregamento
     try {
       const response = await authService.login(email, password);
       if (response.authorized) {
@@ -35,6 +38,8 @@ const Home: NextPage = () => {
       }
     } catch (err) {
       setError("Erro ao autenticar. Por favor, tente novamente.");
+    } finally {
+      setIsLoading(false); // Finaliza o carregamento
     }
   };
 
@@ -107,10 +112,10 @@ const Home: NextPage = () => {
               </div>
             </div>
             <button
-              className="rounded-2xl border-b-4 border-blue-500 bg-blue-400 py-3 font-bold uppercase text-white transition hover:brightness-110"
+              className="rounded-2xl border-b-4 border-blue-500 bg-blue-400 py-3 font-bold uppercase text-white transition hover:brightness-110 flex justify-center items-center"
               onClick={handleLogin}
             >
-              Entrar
+              {isLoading ? <LoadingSpinner /> : "Entrar"} {/* Exibe o componente de carregamento */}
             </button>
           </div>
         </div>
