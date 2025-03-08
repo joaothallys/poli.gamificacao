@@ -1,9 +1,9 @@
 import axios from "axios";
 
 const userService = {
-  getMetaProgress: async (id: number, token: string) => {
+  getMetaProgress: async (customer_id: number, token: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/get/meta-progress/${id}`, {
+      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get/meta-progress/${customer_id}`, {
         headers: {
           "accept": "application/json",
           "Authorization": `Bearer ${token}`
