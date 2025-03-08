@@ -3,7 +3,7 @@ import Image from "next/image";
 import type { ComponentProps } from "react";
 import React, { useState } from "react";
 import type { Tab } from "./BottomBar";
-import { LoginScreen, type LoginScreenState } from "./LoginScreen"; // Adicione a importação do tipo LoginScreenState
+import { LoginScreen, type LoginScreenState } from "./LoginScreen";
 import LogoSvg from "../../public/logo.svg";
 import router, { useRouter } from "next/router";
 import LogoutSvg from "../../public/logout.svg";
