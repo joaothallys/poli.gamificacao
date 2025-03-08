@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import userService from "~/services/userService";
-import LoadingSpinner from "~/components/LoadingSpinner"; // Importando o componente de carregamento
-import { toast } from "react-toastify"; // Importando o toast
+import LoadingSpinner from "~/components/LoadingSpinner";
+import { toast } from "react-toastify";
 
 export const RightBar = () => {
   const [metaProgress, setMetaProgress] = useState<any>(null);

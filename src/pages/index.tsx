@@ -5,8 +5,8 @@ import withAuth from "~/hoc/withAuth";
 import LoadingSpinner from "~/components/LoadingSpinner";
 import Link from "next/link";
 import Image from "next/image";
-import logo from "../../public/img3.svg"; // Adicione o logo
-import rewardsIllustration from "../../public/img4.svg"; // Adicione a nova imagem
+import logo from "../../public/img3.svg";
+import rewardsIllustration from "../../public/img4.svg";
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
 
 const Login = () => {
