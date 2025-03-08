@@ -23,7 +23,7 @@ const withAuth = (WrappedComponent: React.ComponentType, isPublic: boolean = fal
     }, [router, isPublic]);
 
     if (isLoading) {
-      return <div>Loading...</div>; // Ou um componente de carregamento
+      return null;
     }
 
     return <WrappedComponent {...props} />;
