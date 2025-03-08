@@ -141,7 +141,6 @@ const Coach: NextPage = () => {
   const [localGoalXp, setLocalGoalXp] = useState(goalXp);
   return (
     <div>
-      <TopBar />
       <LeftBar selectedTab={null} />
       <BottomBar selectedTab={null} />
       <div className="mx-auto flex flex-col gap-5 px-4 py-20 sm:py-10 md:pl-28 lg:pl-72">
