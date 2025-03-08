@@ -58,7 +58,7 @@ export const RightBar = () => {
       <div className="flex flex-col w-full lg:w-[672px] gap-6">
         <div className="bg-[#0000C8] text-white text-center py-4 px-6 rounded-lg">
           <h1 className="text-[24px] font-bold leading-[32px]">Faça missões e ganhe Policoins</h1>
-          <p className="text-sm">Troque em produtos e.</p>
+          <p className="text-sm">Troque em produtos e benefícios na loja.</p>
         </div>
 
         <div className="flex flex-col gap-6">
@@ -99,6 +99,10 @@ export const RightBar = () => {
   );
 };
 
+const capitalizeFirstLetter = (string: string) => {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
 const MissionSection = ({ title, missions }: { title: string; missions: any[] }) => {
   if (!Array.isArray(missions)) {
     return null;
@@ -113,12 +117,12 @@ const MissionSection = ({ title, missions }: { title: string; missions: any[] })
   return (
     <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
       <div className="flex justify-between items-center">
-        <h2 className="text-lg font-bold text-gray-700">{title.replace(/_/g, " ")}</h2>
+        <h2 className="text-lg font-bold text-gray-700">{capitalizeFirstLetter(title.replace(/_/g, " "))}</h2>
         <span className="text-[#0000C8] text-sm font-bold cursor-pointer">Comece agora</span>
       </div>
       <div className="mt-4 flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <p className="text-gray-700 font-medium">Nível {currentMission.nivel}: {currentMission.descricao}</p>
+          <p className="text-gray-700 font-medium">Nível {currentMission.nivel}: {capitalizeFirstLetter(currentMission.descricao)}</p>
           <div className="relative h-4 bg-gray-200 rounded-full w-full">
             <div className="absolute left-0 top-0 h-4 bg-[#0000C8] rounded-full" style={{ width: `${currentMission.percentual}%` }}></div>
             <div className="absolute inset-0 flex items-center justify-center text-xs font-bold"
