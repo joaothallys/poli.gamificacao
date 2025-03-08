@@ -118,7 +118,7 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
             tabIndex={0}
           >
             <Image src={LogoutSvg} alt="Logout" width={50} height={50} />{" "}
-            <span className="hidden text-sm lg:inline">Logout</span>
+            <span className="hidden text-sm lg:inline">Sair</span>
           </div>
         </ul>
       </nav>
