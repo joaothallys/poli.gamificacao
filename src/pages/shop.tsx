@@ -3,7 +3,6 @@ import React from "react";
 
 import { BottomBar } from "~/components/BottomBar";
 import { LeftBar } from "~/components/LeftBar";
-import { TopBar } from "~/components/TopBar";
 import Image from "next/image";
 
 const products = [
@@ -18,11 +17,10 @@ const products = [
 const Shop: NextPage = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <TopBar />
       <div className="flex w-full">
         <LeftBar selectedTab="Shop" />
-        <div className="flex flex-col items-center justify-center w-full px-10 py-10 ml-20">
-          <h2 className="mb-6 text-3xl font-bold text-[#0000C8]">Loja de Recompensas</h2>
+        <div className="flex flex-col items-center justify-center w-full px-4 py-10 sm:px-10 sm:ml-20">
+          <h2 className="mb-6 text-2xl sm:text-3xl font-bold text-[#0000C8]">Loja de Recompensas</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-[1000px] w-full">
             {products.map((product) => (
               <div key={product.id} className="bg-white p-4 rounded-xl shadow-md flex flex-col items-center">
