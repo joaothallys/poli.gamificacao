@@ -54,8 +54,8 @@ export const RightBar = () => {
   }
 
   return (
-    <div className="flex justify-center gap-6 p-6">
-      <div className="flex flex-col w-[672px] gap-6">
+    <div className="flex flex-col lg:flex-row justify-center gap-6 p-6">
+      <div className="flex flex-col w-full lg:w-[672px] gap-6">
         <div className="bg-[#0000C8] text-white text-center py-4 px-6 rounded-lg">
           <h1 className="text-[24px] font-bold leading-[32px]">Faça missões e ganhe Policoins</h1>
           <p className="text-sm">Troque em produtos e.</p>
@@ -73,7 +73,7 @@ export const RightBar = () => {
       </div>
 
       {/* Coluna da Direita */}
-      <div className="flex flex-col items-start">
+      <div className="flex flex-col items-start w-full lg:w-auto">
         <div className="flex justify-between w-full mb-2">
           <h2 className="text-xl font-bold text-gray-700">Seus Policoins</h2>
           <div className="text-[#0000C8] font-bold text-2xl text-right min-w-[100px]">
@@ -81,7 +81,7 @@ export const RightBar = () => {
           </div>
         </div>
 
-        <div className="w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        <div className="w-full lg:w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200">
           <p className="text-gray-600 text-sm text-center">
             Precisa de ajuda para realizar missões ou resgatar prêmios?
           </p>
