@@ -22,10 +22,16 @@ const config = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "placekitten.com",
+        hostname: "cdn.polichat.io",
         port: "",
-        pathname: "/100/100",
+        pathname: "/gamification/**",
       },
+      // {
+      //   protocol: "https",
+      //   hostname: "cdn.dev.cloud.polichat.com.br",
+      //   port: "",
+      //   pathname: "/company/1/media/**",
+      // },
     ],
   },
 };
