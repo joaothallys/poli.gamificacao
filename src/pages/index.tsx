@@ -86,7 +86,7 @@ const Login = () => {
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             <div className="flex justify-between mt-2">
               <span></span>
-              <Link href="/recover-password" className="text-blue-500">Esqueci minha senha</Link>
+              <Link href="https://app-spa.poli.digital/recover-password" target="_blank" className="text-blue-500">Esqueci minha senha</Link>
             </div>
             <button
               className="w-full mt-4 rounded-lg bg-[#0000C8] py-3 font-bold text-white hover:bg-blue-700"
