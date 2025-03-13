@@ -60,6 +60,21 @@ const userService = {
       throw error;
     }
   },
+
+  getCustomerTotalPoints: async (customerId: number, token: string) => {
+    try {
+      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-customer-total-points/${customerId}`, {
+        headers: {
+          "accept": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter total de pontos do cliente:", error);
+      throw error;
+    }
+  },
 };
 
 

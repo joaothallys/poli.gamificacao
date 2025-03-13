@@ -13,6 +13,9 @@ const Learn: NextPage = () => {
   const [metaProgress, setMetaProgress] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [customerId, setCustomerId] = useState<number | null>(null);
+  const [totalPoints, setTotalPoints] = useState<number | null>(null);
+
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
   useEffect(() => {
     // Recupera o customer_id do localStorage
@@ -32,10 +35,9 @@ const Learn: NextPage = () => {
 
   useEffect(() => {
     const fetchMetaProgress = async () => {
-      if (!customerId) return; // Aguarda o customerId ser definido
+      if (!customerId) return;
 
       try {
-        const token = "123456"; // Substitua pelo token real
         const data = await userService.getMetaProgress(customerId, token);
 
         if (data) {
@@ -51,12 +53,29 @@ const Learn: NextPage = () => {
       }
     };
 
+    const fetchTotalPoints = async () => {
+      if (!customerId) return;
+
+      try {
+        const data = await userService.getCustomerTotalPoints(customerId, token);
+        setTotalPoints(data.total_points);
+      } catch (error) {
+        console.error("Erro ao obter total de pontos:", error);
+        toast.error("Erro ao obter total de pontos.");
+      }
+    };
+
     fetchMetaProgress();
-  }, [customerId]); // Aguarda a atualização do customerId antes de executar a chamada
+    fetchTotalPoints();
+  }, [customerId]);
 
   if (isLoading) {
     return <LoadingSpinner />;
   }
+
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   return (
     <>
@@ -85,7 +104,7 @@ const Learn: NextPage = () => {
           <div className="flex justify-between w-full mb-2">
             <h2 className="text-xl font-bold text-gray-700">Seus Policoins</h2>
             <div className="text-[#0000C8] font-bold text-2xl text-right min-w-[100px]">
-              10,000
+              {totalPoints !== null ? formatCurrency(totalPoints) : "Carregando..."}
             </div>
           </div>
 

@@ -17,12 +17,12 @@ const Shop: NextPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [userBalance] = useState<number>(1000); // Static mock user balance
+  const [userBalance, setUserBalance] = useState<number>(0); // Inicializa com 0
   const [purchaseMessage, setPurchaseMessage] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "123456"; // Use env variable
-  const customerId = 1; // Mock customer ID, replace with actual user ID
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "123456";
+  const customerId = 1;
 
   const fetchAllProducts = useCallback(async () => {
     try {
@@ -49,9 +49,20 @@ const Shop: NextPage = () => {
     }
   }, [token]);
 
+  const fetchUserBalance = useCallback(async () => {
+    try {
+      const response = await userService.getCustomerTotalPoints(customerId, token);
+      setUserBalance(response.total_points);
+    } catch (error) {
+      console.error("Erro ao obter saldo do usuário:", error);
+      setError("Falha ao carregar o saldo do usuário. Tente novamente mais tarde.");
+    }
+  }, [customerId, token]);
+
   useEffect(() => {
     fetchAllProducts();
-  }, [fetchAllProducts]);
+    fetchUserBalance();
+  }, [fetchAllProducts, fetchUserBalance]);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -182,13 +193,13 @@ const Shop: NextPage = () => {
                 {/* Financial Info */}
                 <div className="space-y-2 mb-4">
                   <p className="text-gray-600">
-                    Seu Saldo: <span className="font-bold">R$ {userBalance.toFixed(2)}</span>
+                    Seu Saldo: <span className="font-bold"> {userBalance.toFixed(2)}</span>
                   </p>
                   <p className="text-gray-600">
                     Valor do Item: <span className="font-bold">{selectedProduct.price}</span>
                   </p>
                   <p className="text-gray-600">
-                    Saldo Restante: <span className="font-bold">R$ {getRemainingBalance(selectedProduct)}</span>
+                    Saldo Restante: <span className="font-bold"> {getRemainingBalance(selectedProduct)}</span>
                   </p>
                 </div>
 
@@ -207,8 +218,8 @@ const Shop: NextPage = () => {
               {/* Action Buttons */}
               <div className="flex flex-col space-y-3">
                 <button
-                  className={`px-4 py-2 font-bold rounded-full shadow-md transition-colors ${userBalance >= parseFloat(selectedProduct.price.replace("R$", "").replace(",", "."))
-                      ? "bg-[#0000C8] text-white hover:bg-blue-700"
+                  className={`px-4 py-2 font-bold rounded-full shadow-md transition-colors ${userBalance >= parseFloat(selectedProduct.price.replace("R$", "").replace(",", ".")) 
+                      ? "bg-[#0000C8] text-white hover:bg-blue-700" 
                       : "bg-gray-400 text-gray-700 cursor-not-allowed"
                     }`}
                   onClick={() => handlePurchase(selectedProduct)}
