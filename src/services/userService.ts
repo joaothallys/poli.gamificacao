@@ -18,7 +18,7 @@ const userService = {
 
   getProducts: async (perPage: number, page: number, token: string) => {
     try {
-      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-products?perPage=${perPage}&page=${page}`, {
+      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-products?perPage=${perPage}&page=${page}&transaction_type_id=0`, {
         headers: {
           "accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -76,9 +76,16 @@ const userService = {
     }
   },
 
-  getPointTransactions: async (page: number, perPage: number, customerId: number, status: number, token: string) => {
+  getPointTransactions: async (page: number, perPage: number, token: string, customerId?: number, status?: number) => {
     try {
-      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-point-transactions?page=${page}&per_page=${perPage}&customer_id=${customerId}&transaction_status_id=${status}`, {
+      let url = `https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-point-transactions?page=${page}&per_page=${perPage}`;
+      if (customerId !== undefined) {
+        url += `&customer_id=${customerId}`;
+      }
+      if (status !== undefined) {
+        url += `&transaction_status_id=${status}`;
+      }
+      const response = await axios.get(url, {
         headers: {
           "accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -113,6 +120,5 @@ const userService = {
     }
   }
 };
-
 
 export default userService;

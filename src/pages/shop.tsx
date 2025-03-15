@@ -10,6 +10,7 @@ interface Product {
   name: string;
   price: string;
   link_img: string;
+  description: string; // Adicionado o campo description
 }
 
 const Shop: NextPage = () => {
@@ -77,7 +78,7 @@ const Shop: NextPage = () => {
   };
 
   const handlePurchase = async (product: Product) => {
-    const priceNum = parseFloat(product.price.replace("R$", "").replace(",", "."));
+    const priceNum = parseFloat(product.price.replace("P$", "").replace(",", "."));
     if (userBalance < priceNum) return;
     try {
       setPurchaseMessage("Processando compra...");
@@ -92,7 +93,21 @@ const Shop: NextPage = () => {
   };
 
   const getRemainingBalance = (product: Product) =>
-    (userBalance - parseFloat(product.price.replace("R$", "").replace(",", "."))).toFixed(2);
+    (userBalance - parseFloat(product.price.replace("P$", "").replace(",", "."))).toFixed(2);
+
+  const convertPointsToReal = (value: number | string): string => {
+    const numericValue = typeof value === "string" ? parseFloat(value) : value;
+    const formattedValue = numericValue.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return `P$ ${formattedValue}`;
+  };
+
+  const convertPriceToPolicoins = (price: string): string => {
+    const numericPrice = parseFloat(price.replace("R$", "").replace(",", "."));
+    return convertPointsToReal(numericPrice);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -117,7 +132,7 @@ const Shop: NextPage = () => {
               </h2>
               <div className="flex items-center justify-between">
                 <p className="text-gray-600">
-                  Seu Saldo: <span className="font-bold text-[#0000C8]">{userBalance.toFixed(2)}</span>
+                  Seu Saldo: <span className="font-bold text-[#0000C8]">{convertPointsToReal(userBalance)}</span>
                 </p>
                 <div className="relative w-64">
                   <input
@@ -169,7 +184,7 @@ const Shop: NextPage = () => {
                       <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">
                         {product.name}
                       </h3>
-                      <p className="text-[#0000C8] text-xl font-bold mb-4">{product.price}</p>
+                      <p className="text-[#0000C8] text-xl font-bold mb-4">{convertPriceToPolicoins(product.price)}</p>
                       <button
                         className="w-full py-2 bg-[#0000C8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors"
                         onClick={() => handleProductClick(product)}
@@ -208,14 +223,15 @@ const Shop: NextPage = () => {
             </div>
             <div className="md:w-1/2 p-6 flex flex-col justify-between">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-3">{selectedProduct.name}</h3>
-                <p className="text-[#0000C8] text-xl font-extrabold mb-4">{selectedProduct.price}</p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">{selectedProduct.name}</h3>
+                <p className="text-gray-600 text-sm mb-4">{selectedProduct.description}</p> {/* Adicionando a descrição */}
+                <p className="text-[#0000C8] text-xl font-extrabold mb-4">{convertPriceToPolicoins(selectedProduct.price)}</p>
                 <div className="space-y-2 mb-6 text-sm text-gray-600">
-                  <p>Seu Saldo: <span className="font-semibold">{userBalance.toFixed(2)}</span></p>
-                  <p>Valor do Item: <span className="font-semibold">{selectedProduct.price}</span></p>
-                  <p>Saldo Restante: <span className="font-semibold">{getRemainingBalance(selectedProduct)}</span></p>
+                  <p>Seu Saldo: <span className="font-semibold">{convertPointsToReal(userBalance)}</span></p>
+                  <p>Valor do Item: <span className="font-semibold">{convertPriceToPolicoins(selectedProduct.price)}</span></p>
+                  <p>Saldo Restante: <span className="font-semibold">{convertPointsToReal(getRemainingBalance(selectedProduct))}</span></p>
                 </div>
-                {userBalance < parseFloat(selectedProduct.price.replace("R$", "").replace(",", ".")) ? (
+                {userBalance < parseFloat(selectedProduct.price.replace("P$", "").replace(",", ".")) ? (
                   <p className="text-red-500 font-semibold mb-4">Saldo insuficiente</p>
                 ) : purchaseMessage ? (
                   <p className={`font-semibold mb-4 ${purchaseMessage.includes("Erro") ? "text-red-500" : "text-green-600"}`}>
@@ -226,12 +242,12 @@ const Shop: NextPage = () => {
               <div className="flex gap-4">
                 <button
                   className={`flex-1 py-3 font-semibold rounded-full transition-colors ${
-                    userBalance >= parseFloat(selectedProduct.price.replace("R$", "").replace(",", "."))
+                    userBalance >= parseFloat(selectedProduct.price.replace("P$", "").replace(",", "."))
                       ? "bg-[#0000C8] text-white hover:bg-blue-700"
                       : "bg-gray-300 text-gray-600 cursor-not-allowed"
                   }`}
                   onClick={() => handlePurchase(selectedProduct)}
-                  disabled={userBalance < parseFloat(selectedProduct.price.replace("R$", "").replace(",", "."))}
+                  disabled={userBalance < parseFloat(selectedProduct.price.replace("P$", "").replace(",", "."))}
                 >
                   Comprar Agora
                 </button>

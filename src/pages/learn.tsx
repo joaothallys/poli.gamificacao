@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import userService from "~/services/userService";
 import { toast } from "react-toastify";
 import { LeftBar } from "~/components/LeftBar";
-import { BottomBar } from "~/components/BottomBar"; // Adicionado o BottomBar
+import { BottomBar } from "~/components/BottomBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
 import Bau from "~/components/Bau";
 import BauCheio from "~/components/BauCheio";
+import BauPremio from "~/components/Container.svg";
 
 interface Mission {
   nivel: number;
