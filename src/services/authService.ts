@@ -1,6 +1,10 @@
 import axios from "axios";
-import type { AuthResponse, UserData } from "~/types/auth";
+import type { UserData } from "~/interfaces/UserData";
 
+interface AuthResponse {
+  authorized: boolean;
+  message: string;
+}
 
 const authService = {
   login: async (email: string, password: string): Promise<AuthResponse> => {
@@ -18,18 +22,19 @@ const authService = {
       const loginResponse = await instance.post(`${process.env.NEXT_PUBLIC_API_URL}`, params);
 
       if (loginResponse.status === 200 || loginResponse.status === 204) {
-        const userData: UserData = loginResponse.data;
+        const userData: UserData = loginResponse.data.detail;
+        console.log("userData", userData);
 
-        if (userData.roles.some(role => role.name === "adm")) {
-          // Armazena a resposta completa no localStorage
+        // Verifica se roles_deprecated_id contém "1" ou "3"
+        const roles = userData.roles_deprecated_id.split(",");
+        if (roles.includes("1") || roles.includes("3")) {
           console.log("Login bem-sucedido.");
           localStorage.setItem("user_data", JSON.stringify(userData));
           
-          return { authorized: true, message: "Usuário autorizado como admin." };
+          return { authorized: true, message: "Usuário autorizado." };
         } else {
-          // Se o papel não for 'adm'
-          console.error("Você não é um admin.");
-          return { authorized: false, message: "Você não é um admin." };
+          console.error("Você não tem permissão.");
+          return { authorized: false, message: "Você não tem permissão." };
         }
       } else {
         throw new Error("Credenciais inválidas.");

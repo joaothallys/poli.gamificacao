@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { ComponentProps } from "react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { Tab } from "./BottomBar";
 import { LoginScreen, type LoginScreenState } from "./LoginScreen";
 import LogoSvg from "../../public/Logo.svg";
@@ -9,25 +9,7 @@ import router, { useRouter } from "next/router";
 import LogoutSvg from "../../public/logout.svg";
 import ShopSvg from "../../public/loja.svg";
 import HomeSvg from "../../public/home.svg";
-
-
-const LeftBarMoreMenuSvg = (props: ComponentProps<"svg">) => {
-  return (
-    <svg width="46" height="46" viewBox="0 0 46 46" fill="none" {...props}>
-      <circle
-        cx="23"
-        cy="23"
-        r="19"
-        fill="#CE82FF"
-        stroke="#CE82FF"
-        strokeWidth="2"
-      />
-      <circle cx="15" cy="23" r="2" fill="white" />
-      <circle cx="23" cy="23" r="2" fill="white" />
-      <circle cx="31" cy="23" r="2" fill="white" />
-    </svg>
-  );
-};
+import transacaoPNG from "../../public/transacao.png";
 
 const handleLogout = () => {
   localStorage.removeItem("user_data");
@@ -38,34 +20,18 @@ const bottomBarItems = [
   {
     name: "Home",
     href: "/learn",
-    icon: (
-      <Image src={HomeSvg} alt="Home" width={50} height={50} />
-    ),
+    icon: <Image src={HomeSvg} alt="Home" width={50} height={50} />,
   },
   {
     name: "Loja",
     href: "/shop",
-    icon: (
-      <Image src={ShopSvg} alt="Loja" width={50} height={50} />
-    ),
+    icon: <Image src={ShopSvg} alt="Loja" width={50} height={50} />,
   },
-  // {
-  //   name: "Leaderboards",
-  //   href: "/leaderboard",
-  //   icon: (
-  //     <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
-  //       <path
-  //         d="M7 9.5C7 7.84314 8.34315 6.5 10 6.5H36C37.6569 6.5 39 7.84315 39 9.5V23.5C39 32.3366 31.8366 39.5 23 39.5C14.1634 39.5 7 32.3366 7 23.5V9.5Z"
-  //         fill="#FEC701"
-  //       />
-  //       <path
-  //         opacity="0.3"
-  //         d="M39.0001 13.3455V9.5C39.0001 7.84315 37.657 6.5 36.0001 6.5H31.5706L8.30957 29.8497C9.68623 33.0304 12.0656 35.6759 15.0491 37.3877L39.0001 13.3455Z"
-  //         fill="white"
-  //       />
-  //     </svg>
-  //   ),
-  // },
+  {
+    name: "Transações",
+    href: "/leaderboard",
+    icon: <Image src={transacaoPNG} alt="Transações" width={50} height={50} />,
+  },
 ];
 
 export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
@@ -73,7 +39,18 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
   const router = useRouter();
   const [loginScreenState, setLoginScreenState] =
     useState<LoginScreenState>("HIDDEN");
+  const [hasAccess, setHasAccess] = useState<boolean>(false);
 
+  useEffect(() => {
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      const parsedData = JSON.parse(userData);
+      const roles = parsedData.roles_deprecated_id.split(",");
+      if (roles.includes("1")) {
+        setHasAccess(true);
+      }
+    }
+  }, []);
 
   return (
     <>
@@ -89,6 +66,9 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
         </div>
         <ul className="flex flex-col items-stretch gap-3">
           {bottomBarItems.map((item) => {
+            if (item.name === "Transações" && !hasAccess) {
+              return null;
+            }
             return (
               <li key={item.href} className="flex flex-1">
                 {item.name === selectedTab ? (
