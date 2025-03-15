@@ -3,17 +3,20 @@ import React, { useEffect, useState } from "react";
 import { BottomBar } from "~/components/BottomBar";
 import { LeftBar } from "~/components/LeftBar";
 import userService from "~/services/userService";
+import ReactPaginate from "react-paginate";
 
 const Leaderboard: NextPage = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [customerId, setCustomerId] = useState<number>(1);
-  const [statusFilter, setStatusFilter] = useState<number>(0);
+  const [customerId, setCustomerId] = useState<number | undefined>(undefined); // Inicializado como undefined
+  const [statusFilter, setStatusFilter] = useState<number>(-1);
   const [searchCustomerId, setSearchCustomerId] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
   const [selectedTransaction, setSelectedTransaction] = useState<{ id: number; newStatus: number } | null>(null);
   const [hasAccess, setHasAccess] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [lastPage, setLastPage] = useState<number>(1);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "123456";
 
@@ -36,8 +39,15 @@ const Leaderboard: NextPage = () => {
     const fetchTransactions = async () => {
       try {
         setIsLoading(true);
-        const response = await userService.getPointTransactions(1, 10, customerId, statusFilter, token);
+        const response = await userService.getPointTransactions(
+          currentPage,
+          10,
+          token,
+          customerId, // Pode ser undefined inicialmente
+          statusFilter === -1 ? undefined : statusFilter
+        );
         setTransactions(response.data);
+        setLastPage(response.last_page || 1);
       } catch (error) {
         console.error("Erro ao obter transações:", error);
         setError("Falha ao carregar as transações. Tente novamente mais tarde.");
@@ -47,7 +57,7 @@ const Leaderboard: NextPage = () => {
     };
 
     fetchTransactions();
-  }, [customerId, statusFilter, token, hasAccess]);
+  }, [customerId, statusFilter, token, hasAccess, currentPage]);
 
   const handleStatusChange = async () => {
     if (selectedTransaction) {
@@ -69,7 +79,11 @@ const Leaderboard: NextPage = () => {
 
   const handleSearch = () => {
     if (searchCustomerId) {
-      setCustomerId(Number(searchCustomerId));
+      setCustomerId(Number(searchCustomerId)); // Define o customerId apenas na busca
+      setCurrentPage(1);
+    } else {
+      setCustomerId(undefined); // Volta a não filtrar por customerId se a busca for limpa
+      setCurrentPage(1);
     }
   };
 
@@ -79,7 +93,25 @@ const Leaderboard: NextPage = () => {
     }
   };
 
-  const statusNames = ["Pendente", "Aprovado", "Negado", "Cancelado"];
+  const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
+  const statusNames = ["Todos", "Pendente", "Aprovado", "Negado", "Cancelado"];
+
+  const convertPointsToReal = (points: string) => {
+    const pointValue = parseFloat(points);
+    const formattedValue = pointValue.toLocaleString("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    return `P$ ${formattedValue}`;
+  };
+
+  const handlePageChange = ({ selected }: { selected: number }) => {
+    setCurrentPage(selected + 1);
+  };
 
   if (!hasAccess) {
     return (
@@ -106,9 +138,10 @@ const Leaderboard: NextPage = () => {
                 <label className="text-gray-700 font-medium">Filtro de Status:</label>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(Number(e.target.value))}
+                  onChange={handleStatusFilterChange}
                   className="p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[#0000C8]"
                 >
+                  <option value={-1}>Todos</option>
                   <option value={0}>Pendente</option>
                   <option value={1}>Aprovado</option>
                   <option value={2}>Negado</option>
@@ -151,6 +184,7 @@ const Leaderboard: NextPage = () => {
                     <tr>
                       <th className="py-3 px-6 text-left text-gray-700 font-semibold">Customer ID</th>
                       <th className="py-3 px-6 text-left text-gray-700 font-semibold">Produto</th>
+                      <th className="py-3 px-6 text-left text-gray-700 font-semibold">Policoins</th>
                       <th className="py-3 px-6 text-left text-gray-700 font-semibold">Status</th>
                       <th className="py-3 px-6 text-left text-gray-700 font-semibold">Ações</th>
                     </tr>
@@ -160,6 +194,7 @@ const Leaderboard: NextPage = () => {
                       <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
                         <td className="py-4 px-6 border-b border-gray-200">{transaction.customer_id}</td>
                         <td className="py-4 px-6 border-b border-gray-200">{transaction.product_name}</td>
+                        <td className="py-4 px-6 border-b border-gray-200">{convertPointsToReal(transaction.points)}</td>
                         <td className="py-4 px-6 border-b border-gray-200">
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -173,7 +208,7 @@ const Leaderboard: NextPage = () => {
                             }`}
                           >
                             {typeof transaction.transaction_status === "number"
-                              ? statusNames[transaction.transaction_status]
+                              ? statusNames[transaction.transaction_status + 1]
                               : transaction.transaction_status}
                           </span>
                         </td>
@@ -196,6 +231,27 @@ const Leaderboard: NextPage = () => {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Pagination with ReactPaginate */}
+                <div className="mt-4">
+                  <ReactPaginate
+                    forcePage={currentPage - 1}
+                    previousLabel="Anterior"
+                    nextLabel="Próximo"
+                    breakLabel="..."
+                    pageCount={lastPage}
+                    marginPagesDisplayed={2}
+                    pageRangeDisplayed={5}
+                    onPageChange={handlePageChange}
+                    containerClassName="flex justify-center items-center space-x-2 mt-4"
+                    pageClassName="px-3 py-1 rounded-full text-gray-700 hover:bg-gray-200"
+                    activeClassName="bg-[#0000C8] text-white"
+                    previousClassName="px-3 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    nextClassName="px-3 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    breakClassName="px-3 py-1 text-gray-700"
+                    disabledClassName="opacity-50 cursor-not-allowed"
+                  />
+                </div>
               </div>
             )}
           </div>
