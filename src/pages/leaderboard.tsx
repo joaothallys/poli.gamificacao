@@ -9,7 +9,7 @@ const Leaderboard: NextPage = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [customerId, setCustomerId] = useState<number | undefined>(undefined); // Inicializado como undefined
+  const [customerId, setCustomerId] = useState<number | undefined>(undefined);
   const [statusFilter, setStatusFilter] = useState<number>(-1);
   const [searchCustomerId, setSearchCustomerId] = useState<string>("");
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -43,7 +43,7 @@ const Leaderboard: NextPage = () => {
           currentPage,
           10,
           token,
-          customerId, // Pode ser undefined inicialmente
+          customerId,
           statusFilter === -1 ? undefined : statusFilter
         );
         setTransactions(response.data);
@@ -79,10 +79,10 @@ const Leaderboard: NextPage = () => {
 
   const handleSearch = () => {
     if (searchCustomerId) {
-      setCustomerId(Number(searchCustomerId)); // Define o customerId apenas na busca
+      setCustomerId(Number(searchCustomerId));
       setCurrentPage(1);
     } else {
-      setCustomerId(undefined); // Volta a não filtrar por customerId se a busca for limpa
+      setCustomerId(undefined);
       setCurrentPage(1);
     }
   };
@@ -273,7 +273,7 @@ const Leaderboard: NextPage = () => {
             <p className="text-gray-600 mb-6">
               Tem certeza que deseja alterar o status da transação para{" "}
               <span className="font-semibold text-[#0000C8]">
-                {selectedTransaction && statusNames[selectedTransaction.newStatus]}
+                {selectedTransaction && statusNames[selectedTransaction.newStatus + 1]} {/* Ajustado para +1 */}
               </span>?
             </p>
             <div className="flex gap-4">
