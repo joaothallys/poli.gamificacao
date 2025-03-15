@@ -75,6 +75,43 @@ const userService = {
       throw error;
     }
   },
+
+  getPointTransactions: async (page: number, perPage: number, customerId: number, status: number, token: string) => {
+    try {
+      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-point-transactions?page=${page}&per_page=${perPage}&customer_id=${customerId}&transaction_status_id=${status}`, {
+        headers: {
+          "accept": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter transações de pontos:", error);
+      throw error;
+    }
+  },
+
+  updatePointTransactionStatus: async (transactionId: number, status: number, token: string) => {
+    try {
+      const response = await axios.put(
+        `https://gamification-gamma-polidigital.svc-us5.zcloud.ws/update-point-transactions/${transactionId}`,
+        new URLSearchParams({
+          transaction_status_id: status.toString(),
+        }).toString(),
+        {
+          headers: {
+            accept: "application/json",
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao atualizar status da transação de pontos:", error);
+      throw error;
+    }
+  }
 };
 
 
