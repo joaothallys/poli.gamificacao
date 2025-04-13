@@ -20,17 +20,41 @@ const bottomBarItems = [
   {
     name: "Home",
     href: "/learn",
-    icon: <Image src={HomeSvg} alt="Home" width={50} height={50} />,
+    icon: (isActive: boolean) => (
+      <Image
+        src={HomeSvg}
+        alt="Home"
+        width={50}
+        height={50}
+        className={isActive ? "text-blue-400" : "grayscale"} // Aplica cinza quando inativo
+      />
+    ),
   },
   {
     name: "Loja",
     href: "/shop",
-    icon: <Image src={ShopSvg} alt="Loja" width={50} height={50} />,
+    icon: (isActive: boolean) => (
+      <Image
+        src={ShopSvg}
+        alt="Loja"
+        width={50}
+        height={50}
+        className={isActive ? "text-blue-400" : "grayscale"}
+      />
+    ),
   },
   {
     name: "Transações",
     href: "/leaderboard",
-    icon: <Image src={transacaoPNG} alt="Transações" width={50} height={50} />,
+    icon: (isActive: boolean) => (
+      <Image
+        src={transacaoPNG}
+        alt="Transações"
+        width={50}
+        height={50}
+        className={isActive ? "text-blue-400" : "grayscale"}
+      />
+    ),
   },
 ];
 
@@ -69,6 +93,7 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
             if (item.name === "Transações" && !hasAccess) {
               return null;
             }
+            const isActive = router.pathname === item.href; // Verifica se a rota atual é a mesma do item
             return (
               <li key={item.href} className="flex flex-1">
                 {item.name === selectedTab ? (
@@ -76,7 +101,7 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
                     href={item.href}
                     className="flex grow items-center gap-3 rounded-xl border-2 border-[#84d8ff] bg-[#ddf4ff] px-2 py-1 text-sm font-bold uppercase text-blue-400"
                   >
-                    {item.icon}{" "}
+                    {item.icon(isActive)}{" "}
                     <span className="sr-only lg:not-sr-only">{item.name}</span>
                   </Link>
                 ) : (
@@ -84,7 +109,7 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
                     href={item.href}
                     className="flex grow items-center gap-3 rounded-xl px-2 py-1 text-sm font-bold uppercase text-gray-400 hover:bg-gray-100"
                   >
-                    {item.icon}{" "}
+                    {item.icon(isActive)}{" "}
                     <span className="sr-only lg:not-sr-only">{item.name}</span>
                   </Link>
                 )}

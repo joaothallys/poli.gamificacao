@@ -47,7 +47,7 @@ const Login = () => {
           <div className="w-full flex flex-col items-center mt-8">
             <Image src={logo} alt="Logo" width={150} height={150} />
             <h2 className="text-center text-xl font-bold mt-4">Programa de recompensas da Poli.</h2>
-            <p className="text-center text-lg text-[#B6FF00] font-semibold">Acompanhe seus Poli Coins.</p>
+            <p className="text-center text-lg text-[#B6FF00] font-semibold">Acompanhe seus Policoins.</p>
             <div className="hidden md:block mt-6">
               <Image src={rewardsIllustration} alt="Recompensas" width={300} height={200} />
             </div>

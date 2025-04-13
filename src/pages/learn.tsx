@@ -31,6 +31,7 @@ const Learn: NextPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [customerId, setCustomerId] = useState<number | null>(null);
   const [totalPoints, setTotalPoints] = useState<number | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
@@ -107,7 +108,26 @@ const Learn: NextPage = () => {
 
             <div className="flex flex-col items-start w-full lg:w-auto">
               <div className="flex justify-between w-full mb-2">
-                <h2 className="text-xl font-bold text-gray-700">Seus Policoins</h2>
+                <div className="relative flex items-center">
+                  <h2 className="text-xl font-bold text-gray-700">Seus Policoins</h2>
+                  <div
+                    className="ml-2 w-5 h-5 bg-[#E6E6FA] rounded-full flex items-center justify-center text-[#4B0082] text-xs cursor-pointer"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                  >
+                    i
+                  </div>
+                  {showTooltip && (
+                    <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10">
+                      {/* Seta do tooltip */}
+                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-[#F5F5F5] border-b-8 border-b-transparent" />
+                      <div className="flex flex-col gap-0.5 max-w-[200px]">
+                        <span className="whitespace-nowrap">Os seus Policoins podem levar</span>
+                        <span className="whitespace-nowrap">até 1 dia para serem atualizados.</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="text-[#0000C8] font-bold text-2xl text-right min-w-[100px]">
                   {totalPoints !== null ? formatCurrency(totalPoints) : "Carregando..."}
                 </div>
@@ -132,7 +152,6 @@ const Learn: NextPage = () => {
         </>
       )}
 
-      {/* BottomBar for Mobile Navigation */}
       <BottomBar selectedTab="Learn" />
     </>
   );
@@ -165,6 +184,8 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
 
   if (!currentMission) return null;
 
+  const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-center">
@@ -186,7 +207,7 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
             className="absolute inset-0 flex items-center justify-center text-xs font-bold"
             style={{ color: currentMission.percentual > 50 ? "white" : "black" }}
           >
-            {currentMission.valor} / {currentMission.objetivo}
+            {formatNumber(currentMission.valor)} / {formatNumber(currentMission.objetivo)}
           </div>
           <div className="absolute right-[-10px] top-[-8px] h-8 w-8">
             {currentMission.percentual >= 100 ? <BauCheio /> : <Bau />}

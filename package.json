@@ -12,6 +12,7 @@
     "@t3-oss/env-nextjs": "^0.7.3",
     "axios": "^1.8.2",
     "dayjs": "^1.11.13",
+    "dotenv": "^16.5.0",
     "lucide-react": "^0.479.0",
     "next": "^14.2.11",
     "react": "18.3.1",
@@ -20,6 +21,7 @@
     "react-loader-spinner": "^6.1.6",
     "react-paginate": "^8.3.0",
     "react-toastify": "^11.0.5",
+    "react-tooltip": "^5.28.1",
     "zod": "^3.23.8",
     "zustand": "^4.4.7"
   },
