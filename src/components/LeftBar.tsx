@@ -7,9 +7,9 @@ import { LoginScreen, type LoginScreenState } from "./LoginScreen";
 import LogoSvg from "../../public/Logo.svg";
 import router, { useRouter } from "next/router";
 import LogoutSvg from "../../public/logout.svg";
-import ShopSvg from "../../public/loja.svg";
+import Shop from "../../public/shop.svg";
 import HomeSvg from "../../public/home.svg";
-import transacaoPNG from "../../public/transacao.png";
+import transacoes from "../../public/transacoes.svg";
 
 const handleLogout = () => {
   localStorage.removeItem("user_data");
@@ -35,7 +35,7 @@ const bottomBarItems = [
     href: "/shop",
     icon: (isActive: boolean) => (
       <Image
-        src={ShopSvg}
+        src={Shop}
         alt="Loja"
         width={50}
         height={50}
@@ -48,7 +48,7 @@ const bottomBarItems = [
     href: "/leaderboard",
     icon: (isActive: boolean) => (
       <Image
-        src={transacaoPNG}
+        src={transacoes}
         alt="Transações"
         width={50}
         height={50}
