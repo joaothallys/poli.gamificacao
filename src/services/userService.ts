@@ -1,9 +1,11 @@
 import axios from "axios";
 
+const BASE_URL = process.env.NEXT_URL_PUBLIC_GAMI;
+
 const userService = {
   getMetaProgress: async (customer_id: number, token: string) => {
     try {
-      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get/meta-progress/${customer_id}`, {
+      const response = await axios.get(`${BASE_URL}/get-meta-progress/${customer_id}`, {
         headers: {
           "accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -18,7 +20,7 @@ const userService = {
 
   getProducts: async (perPage: number, page: number, token: string) => {
     try {
-      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-products?perPage=${perPage}&page=${page}&transaction_type_id=0`, {
+      const response = await axios.get(`${BASE_URL}/get-products?perPage=${perPage}&page=${page}&transaction_type_id=0`, {
         headers: {
           "accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -39,7 +41,7 @@ const userService = {
   ) => {
     try {
       const response = await axios.post(
-        "https://gamification-gamma-polidigital.svc-us5.zcloud.ws/post-transaction",
+        `${BASE_URL}/post-transaction`,
         new URLSearchParams({
           customer_id: customerId.toString(),
           transactional_type: transactionalType.toString(),
@@ -63,7 +65,7 @@ const userService = {
 
   getCustomerTotalPoints: async (customerId: number, token: string) => {
     try {
-      const response = await axios.get(`https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-customer-total-points/${customerId}`, {
+      const response = await axios.get(`${BASE_URL}/get-customer-total-points/${customerId}`, {
         headers: {
           "accept": "application/json",
           "Authorization": `Bearer ${token}`
@@ -78,7 +80,7 @@ const userService = {
 
   getPointTransactions: async (page: number, perPage: number, token: string, customerId?: number, status?: number) => {
     try {
-      let url = `https://gamification-gamma-polidigital.svc-us5.zcloud.ws/get-point-transactions?page=${page}&per_page=${perPage}`;
+      let url = `${BASE_URL}/get-point-transactions?page=${page}&per_page=${perPage}`;
       if (customerId !== undefined) {
         url += `&customer_id=${customerId}`;
       }
@@ -101,7 +103,7 @@ const userService = {
   updatePointTransactionStatus: async (transactionId: number, status: number, token: string) => {
     try {
       const response = await axios.put(
-        `https://gamification-gamma-polidigital.svc-us5.zcloud.ws/update-point-transactions/${transactionId}`,
+        `${BASE_URL}/update-point-transactions/${transactionId}`,
         new URLSearchParams({
           transaction_status_id: status.toString(),
         }).toString(),
