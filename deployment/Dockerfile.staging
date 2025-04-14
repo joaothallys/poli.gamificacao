@@ -1,0 +1,21 @@
+FROM public.ecr.aws/p1e5c6b5/node:20 as builder
+
+RUN npm install -g pnpm
+
+COPY --chown=node:node . /app/
+
+WORKDIR /app
+
+RUN chown -R node:node /app
+
+USER node:node
+
+RUN pnpm install && pnpm run build
+
+FROM public.ecr.aws/p1e5c6b5/nginx:stable
+
+COPY deployment/nginx.conf /etc/nginx/nginx.conf
+
+COPY deployment/default.conf.template /etc/nginx/templates/default.conf.template
+
+COPY --from=builder /app/dist /usr/share/nginx/html
