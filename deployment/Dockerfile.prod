@@ -1,21 +1,34 @@
-FROM public.ecr.aws/p1e5c6b5/node:20 as builder
-
-RUN npm install -g pnpm
-
-COPY --chown=node:node . /app/
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN chown -R node:node /app
+RUN npm install -g pnpm
 
-USER node:node
+COPY package.json pnpm-lock.yaml ./
 
-RUN pnpm install && pnpm run build
+RUN pnpm install --frozen-lockfile
 
-FROM public.ecr.aws/p1e5c6b5/nginx:stable
+COPY . .
 
-COPY deployment/nginx.conf /etc/nginx/nginx.conf
+RUN pnpm build
 
-COPY deployment/default.conf.template /etc/nginx/templates/default.conf.template
+FROM node:20-alpine AS runner
 
-COPY --from=builder /app/out /usr/share/nginx/html
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+RUN npm install -g pnpm
+
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/tailwind.config.ts ./
+COPY --from=builder /app/postcss.config.cjs ./
+
+EXPOSE 3000
+
+CMD ["pnpm", "start"]
