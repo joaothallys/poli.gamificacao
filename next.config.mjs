@@ -6,6 +6,7 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+
   images: {
     remotePatterns: [
       {
@@ -17,9 +18,9 @@ const config = {
     ],
   },
 
-  // Adicione outras variáveis de ambiente, se necessário
+  // Exponha variáveis de ambiente ao cliente, se necessário
   env: {
-    // NEXT_PUBLIC_CLIENTVAR: env.NEXT_PUBLIC_CLIENTVAR,
+    NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR || "",
   },
 };
 

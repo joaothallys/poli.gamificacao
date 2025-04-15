@@ -10,7 +10,7 @@ services:
     environment:
       - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-      - NEXT_URL_PUBLIC_GAMI=${NEXT_URL_PUBLIC_GAMI}
+      - NEXT_PUBLIC_URL_GAMI=${NEXT_PUBLIC_URL_GAMI}
       - NEXT_PUBLIC_API_TOKEN=${NEXT_PUBLIC_API_TOKEN}
       - PORT=3000
     volumes:
