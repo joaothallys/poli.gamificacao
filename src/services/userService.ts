@@ -1,32 +1,35 @@
 import axios from "axios";
 
+// URL fixa da API de produção
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 const userService = {
   getMetaProgress: async (customer_id: number, token: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_URL_GAMI}/get-meta-progress/${customer_id}`, {
+      const url = `${API_URL}/get/meta-progress/${customer_id}`;
+      const response = await axios.get(url, {
         headers: {
-          "accept": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter meta progress:", error);
       throw error;
     }
   },
 
   getProducts: async (perPage: number, page: number, token: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_URL_GAMI}/get-products?perPage=${perPage}&page=${page}&transaction_type_id=0`, {
+      const url = `${API_URL}/get-products?perPage=${perPage}&page=${page}&transaction_type_id=0`;
+      const response = await axios.get(url, {
         headers: {
-          "accept": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter produtos:", error);
       throw error;
     }
   },
@@ -38,87 +41,83 @@ const userService = {
     token: string
   ) => {
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_URL_GAMI}/post-transaction`,
-        new URLSearchParams({
-          customer_id: customerId.toString(),
-          transactional_type: transactionalType.toString(),
-          points: "",
-          product_id: productId.toString(),
-        }).toString(),
-        {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+      const url = `${API_URL}/post-transaction`;
+      const body = new URLSearchParams({
+        customer_id: customerId.toString(),
+        transactional_type: transactionalType.toString(),
+        points: "",
+        product_id: productId.toString(),
+      }).toString();
+
+      const response = await axios.post(url, body, {
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
       return response.data;
     } catch (error) {
-      console.error("Erro ao realizar transação:", error);
       throw error;
     }
   },
 
   getCustomerTotalPoints: async (customerId: number, token: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_URL_GAMI}/get-customer-total-points/${customerId}`, {
+      const url = `${API_URL}/get-customer-total-points/${customerId}`;
+      const response = await axios.get(url, {
         headers: {
-          "accept": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter total de pontos do cliente:", error);
       throw error;
     }
   },
 
   getPointTransactions: async (page: number, perPage: number, token: string, customerId?: number, status?: number) => {
     try {
-      let url = `${process.env.NEXT_PUBLIC_URL_GAMI}/get-point-transactions?page=${page}&per_page=${perPage}`;
+      let url = `${API_URL}/get-point-transactions?page=${page}&per_page=${perPage}`;
       if (customerId !== undefined) {
         url += `&customer_id=${customerId}`;
       }
       if (status !== undefined) {
         url += `&transaction_status_id=${status}`;
       }
+
       const response = await axios.get(url, {
         headers: {
-          "accept": "application/json",
-          "Authorization": `Bearer ${token}`
-        }
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
       return response.data;
     } catch (error) {
-      console.error("Erro ao obter transações de pontos:", error);
       throw error;
     }
   },
 
   updatePointTransactionStatus: async (transactionId: number, status: number, token: string) => {
     try {
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_URL_GAMI}/update-point-transactions/${transactionId}`,
-        new URLSearchParams({
-          transaction_status_id: status.toString(),
-        }).toString(),
-        {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        }
-      );
+      const url = `${API_URL}/update-point-transactions/${transactionId}`;
+      const body = new URLSearchParams({
+        transaction_status_id: status.toString(),
+      }).toString();
+
+      const response = await axios.put(url, body, {
+        headers: {
+          accept: "application/json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
       return response.data;
     } catch (error) {
-      console.error("Erro ao atualizar status da transação de pontos:", error);
       throw error;
     }
-  }
+  },
 };
 
 export default userService;

@@ -218,5 +218,4 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
   );
 };
 
-
 export default Learn;
