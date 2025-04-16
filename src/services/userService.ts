@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // URL fixa da API para teste
-const API_URL = process.env.NEXT_PUBLIC_URL_GAMI;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const userService = {
   getMetaProgress: async (customer_id: number, token: string) => {

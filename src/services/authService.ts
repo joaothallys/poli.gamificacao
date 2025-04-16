@@ -19,7 +19,7 @@ const authService = {
       params.append("email", email);
       params.append("password", password);
 
-      const loginResponse = await instance.post(`${process.env.NEXT_PUBLIC_API_URL}`, params);
+      const loginResponse = await instance.post(`${process.env.NEXT_PUBLIC_API_URL}/get-me-foundation`, params);
 
       if (loginResponse.status === 200 || loginResponse.status === 204) {
         const userData: UserData = loginResponse.data.detail;
