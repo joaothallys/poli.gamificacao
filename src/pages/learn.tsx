@@ -68,6 +68,7 @@ const Learn: NextPage = () => {
     };
 
     fetchData();
+    
   }, [customerId, token]);
 
   const formatCurrency = (value: number) =>
