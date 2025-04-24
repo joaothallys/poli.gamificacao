@@ -16,13 +16,13 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <>
       <Head>
-        <title>React Duolingo Clone</title>
+        <title>Poli Gamificação</title>
         <meta
           name="description"
-          content="Duolingo web app clone written with React"
+          content=""
         />
         <link rel="icon" href="/favicon.ico" />
-        <meta name="theme-color" content="#0A0" />
+        <meta name="theme-color" content="#0000C8" />
         <link rel="manifest" href="/app.webmanifest" />
       </Head>
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />

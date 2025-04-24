@@ -26,7 +26,7 @@ const bottomBarItems = [
         alt="Home"
         width={50}
         height={50}
-        className={isActive ? "text-blue-400" : "grayscale"} // Aplica cinza quando inativo
+        className={isActive ? "text-blue-400" : "grayscale"}
       />
     ),
   },
