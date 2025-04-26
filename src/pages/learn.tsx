@@ -25,6 +25,41 @@ interface MetaProgress {
   [category: string]: SubTheme;
 }
 
+// Definição dos níveis e seus limites
+const levels = [
+  { name: "Starter", min: 0, max: 5000 },
+  { name: "Bronze", min: 5001, max: 15000 },
+  { name: "Prata", min: 15001, max: 50000 },
+  { name: "Ouro", min: 50001, max: 100000 },
+  { name: "Diamante", min: 100001, max: 500000 },
+  { name: "UCE", min: 500001, max: Infinity },
+];
+
+// Função para determinar o nível atual e progresso
+const getLevelInfo = (points: number) => {
+  const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
+  if (!currentLevel) return { name: "Starter", progress: 0, current: 0, next: 5000 };
+
+  const nextLevel = levels[levels.indexOf(currentLevel) + 1] || currentLevel;
+  const progress = ((points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100;
+  return {
+    name: currentLevel.name,
+    progress: Math.min(progress, 100),
+    current: points,
+    next: nextLevel.max,
+  };
+};
+
+// Mapeamento de níveis para ícones
+const levelIcons: { [key: string]: string } = {
+  Starter: "/starter.svg",
+  Bronze: "/bronze.svg",
+  Prata: "/prata.svg",
+  Ouro: "/ouro.svg",
+  Diamante: "/diamante.svg",
+  UCE: "/uce.svg",
+};
+
 // Componente principal da página Learn
 const Learn: NextPage = () => {
   const { loginScreenState, setLoginScreenState } = useLoginScreen();
@@ -77,6 +112,16 @@ const Learn: NextPage = () => {
   const formatCurrency = (value: number) =>
     value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+  const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
+
+  // Obtém informações do nível atual
+  const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000 };
+
+  // Debug: Log the level and image path
+  useEffect(() => {
+    console.log(`Current Level: ${levelInfo.name}, Points: ${totalPoints}, Image: ${levelIcons[levelInfo.name]}`);
+  }, [levelInfo.name, totalPoints]);
+
   return (
     <>
       <LeftBar selectedTab="Learn" />
@@ -112,6 +157,7 @@ const Learn: NextPage = () => {
             </div>
 
             <div className="flex flex-col items-start w-full lg:w-auto">
+              {/* Seus Policoins */}
               <div className="flex justify-between w-full mb-2">
                 <div className="relative flex items-center">
                   <h2 className="text-xl font-bold text-gray-700">Seus Policoins</h2>
@@ -136,6 +182,52 @@ const Learn: NextPage = () => {
                   {totalPoints !== null ? formatCurrency(totalPoints) : "Carregando..."}
                 </div>
               </div>
+
+              {/* Novo bloco: Seu Nível */}
+              <div className="w-full lg:w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200 mb-4">
+                <div className="flex flex-col items-center mb-2">
+                  <h2 className="text-xl font-bold text-gray-700">Seu Nível</h2>
+                  <div
+                    className="mt-2 flex items-center justify-center gap-[10px] p-2"
+                    style={{
+                      width: "94px",
+                      height: "80px",
+                      borderRadius: "8px",
+                      background: "radial-gradient(64.37% 64.37% at 69.01% 35.62%, #ACADEA 0%, #6666DE 100%)",
+                    }}
+                  >
+                    <img
+                      key={levelInfo.name} // Force re-render when level changes
+                      src={levelIcons[levelInfo.name] || "/starter.svg"}
+                      alt={`${levelInfo.name} Level Icon`}
+                      style={{ width: "78px", height: "51.68278121948242px" }}
+                      onError={(e) => {
+                        console.error(`Failed to load image for level ${levelInfo.name}: ${levelIcons[levelInfo.name] || "/starter.svg"}`);
+                        e.currentTarget.src = "/fallback.svg"; // Fallback image
+                      }}
+                    />
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm mb-2 text-center">
+                  {levelInfo.name === "UCE"
+                    ? "Incrível, você ultrapassou 50 mil Policoins e se tornou nível ouro!"
+                    : `Suba de nível ao alcançar ${formatNumber(levelInfo.next)} Policoins!`}
+                </p>
+                <div className="relative h-4 bg-gray-200 rounded-full w-full">
+                  <div
+                    className="absolute left-0 top-0 h-4 bg-[#0000C8] rounded-full"
+                    style={{ width: `${levelInfo.progress}%` }}
+                  />
+                  <div
+                    className="absolute inset-0 flex items-center justify-center text-xs font-bold"
+                    style={{ color: levelInfo.progress > 50 ? "white" : "black" }}
+                  >
+                    {formatNumber(levelInfo.current)} / {formatNumber(levelInfo.next)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Fale Conosco */}
               <div className="w-full lg:w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200">
                 <p className="text-gray-600 text-sm text-center">
                   Precisa de ajuda para realizar missões ou resgatar prêmios?
@@ -229,7 +321,7 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
                   {completedMissions.map((mission) => (
                     <div key={`${mission.subTheme}-${mission.nivel}`} className="flex flex-col gap-1">
                       <p className="text-gray-600 text-sm font-medium">
-                        {capitalizeFirstLetter(mission.subTheme.replace(/_/g, " ")).toUpperCase()}
+                        {capitalizeFirstLetter(mission.subTheme.replace(/_/g, " "))}
                       </p>
                       <p className="text-gray-600 text-sm">
                         Nível {mission.nivel}: {capitalizeFirstLetter(mission.descricao)} • (Ganhe {formatNumber(mission.objetivo)} Policoins)

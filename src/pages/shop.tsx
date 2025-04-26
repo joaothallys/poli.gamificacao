@@ -10,7 +10,7 @@ interface Product {
   name: string;
   price: string;
   link_img: string;
-  description: string; // Adicionado o campo description
+  description: string;
 }
 
 const Shop: NextPage = () => {
@@ -40,8 +40,8 @@ const Shop: NextPage = () => {
       } while (page <= lastPage);
       setProducts(allProducts);
     } catch (error) {
-      console.error("Erro ao obter produtos:", error);
-      setError("Falha ao carregar os produtos. Tente novamente mais tarde.");
+      console.error("Error fetching products:", error);
+      setError("Failed to load products. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -52,8 +52,8 @@ const Shop: NextPage = () => {
       const response = await userService.getCustomerTotalPoints(customerId, token);
       setUserBalance(response.total_points);
     } catch (error) {
-      console.error("Erro ao obter saldo do usuário:", error);
-      setError("Falha ao carregar o saldo do usuário.");
+      console.error("Error fetching user balance:", error);
+      setError("Failed to load user balance.");
     }
   }, [customerId, token]);
 
@@ -78,36 +78,42 @@ const Shop: NextPage = () => {
   };
 
   const handlePurchase = async (product: Product) => {
-    const priceNum = parseFloat(product.price.replace("P$", "").replace(",", "."));
+    const priceNum = parseFloat(product.price);
     if (userBalance < priceNum) return;
     try {
-      setPurchaseMessage("Processando compra...");
+      setPurchaseMessage("Processing purchase...");
       const response = await userService.postTransaction(customerId, 0, product.id, token);
-      if (response.status === 200 || 202) {
+      if (response.status === 200 || response.status === 202) {
         setPurchaseMessage("");
         setShowSuccessModal(true);
+        await fetchUserBalance(); // Refresh balance after purchase
       }
     } catch (error) {
-      setPurchaseMessage("Erro ao processar a compra. Tente novamente.");
+      console.error("Error processing purchase:", error);
+      setPurchaseMessage("Failed to process purchase. Please try again.");
     }
   };
 
   const getRemainingBalance = (product: Product) =>
-    (userBalance - parseFloat(product.price.replace("P$", "").replace(",", "."))).toFixed(2);
+    (userBalance - parseFloat(product.price)).toFixed(2);
 
-  const convertPointsToReal = (value: number | string): string => {
+  const formatPrice = (value: number | string): string => {
     const numericValue = typeof value === "string" ? parseFloat(value) : value;
-    const formattedValue = numericValue.toLocaleString("pt-BR", {
+    return `P$ ${numericValue.toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    });
-    return `P$ ${formattedValue}`;
+    })}`;
   };
 
-  const convertPriceToPolicoins = (price: string): string => {
-    const numericPrice = parseFloat(price.replace("R$", "").replace(",", "."));
-    return convertPointsToReal(numericPrice);
-  };
+  // Group products by description
+  const groupedProducts = products.reduce((acc: Record<string, Product[]>, product) => {
+    const desc = product.description || "Outros";
+    if (!acc[desc]) {
+      acc[desc] = [];
+    }
+    acc[desc].push(product);
+    return acc;
+  }, {});
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
@@ -119,7 +125,7 @@ const Shop: NextPage = () => {
             <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 border-4 border-t-[#0000C8] border-gray-200 rounded-full animate-spin"></div>
-                <p className="mt-4 text-gray-700">Carregando produtos...</p>
+                <p className="mt-4 text-gray-700">Loading products...</p>
               </div>
             </div>
           )}
@@ -128,69 +134,55 @@ const Shop: NextPage = () => {
           {!isLoading && (
             <div className="max-w-[1000px] mx-auto w-full mb-8">
               <h2 className="text-3xl font-extrabold text-[#0000C8] mb-4 text-center">
-                Loja de Recompensas
+                Loja de recompensas
               </h2>
               <div className="flex items-center justify-between">
                 <p className="text-gray-600">
-                  Seu Saldo: <span className="font-bold text-[#0000C8]">{convertPointsToReal(userBalance)}</span>
+                  Seu saldo: <span className="font-bold text-[#0000C8]">{formatPrice(userBalance)}</span>
                 </p>
-                {/* <div className="relative w-64">
-                  <input
-                    type="text"
-                    placeholder="Buscar produtos..."
-                    className="w-full py-2 px-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0000C8] text-sm"
-                    disabled
-                  />
-                  <svg
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div> */}
               </div>
 
-              {/* Products Grid */}
+              {/* Products Sections */}
               {error ? (
                 <p className="text-red-500 text-center">{error}</p>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-[1000px] mx-auto w-full">
-                  {products.map((product) => (
-                    <div
-                      key={product.id}
-                      className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center"
-                    >
-                      <div
-                        className="cursor-pointer mb-4"
-                        onClick={() => handleProductClick(product)}
-                      >
-                        <Image
-                          src={product.link_img}
-                          alt={product.name}
-                          className="h-48 w-48 object-cover rounded-lg"
-                          width={192}
-                          height={192}
-                          loading="lazy"
-                          onError={(e) => (e.currentTarget.src = "/fallback-image.jpg")}
-                        />
+                <div className="space-y-12">
+                  {Object.entries(groupedProducts).map(([description, products]) => (
+                    <div key={description}>
+                      <h3 className="text-2xl font-bold text-gray-800 mb-6 capitalize">{description}</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-[1000px] mx-auto w-full">
+                        {products.map((product) => (
+                          <div
+                            key={product.id}
+                            className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center"
+                          >
+                            <div
+                              className="cursor-pointer mb-4"
+                              onClick={() => handleProductClick(product)}
+                            >
+                              <Image
+                                src={product.link_img}
+                                alt={product.name}
+                                className="h-48 w-48 object-cover rounded-lg"
+                                width={192}
+                                height={192}
+                                loading="lazy"
+                                onError={(e) => (e.currentTarget.src = "/fallback-image.jpg")}
+                              />
+                            </div>
+                            <h4 className="text-lg font-semibold text-gray-800 text-center mb-2">
+                              {product.name}
+                            </h4>
+                            <p className="text-[#0000C8] text-xl font-bold mb-4">{formatPrice(product.price)}</p>
+                            <button
+                              className="w-full py-2 bg-[#0000C8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors"
+                              onClick={() => handleProductClick(product)}
+                            >
+                              Ver detalhes
+                            </button>
+                          </div>
+                        ))}
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-800 text-center mb-2">
-                        {product.name}
-                      </h3>
-                      <p className="text-[#0000C8] text-xl font-bold mb-4">{convertPriceToPolicoins(product.price)}</p>
-                      <button
-                        className="w-full py-2 bg-[#0000C8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors"
-                        onClick={() => handleProductClick(product)}
-                      >
-                        Ver Detalhes
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -224,15 +216,15 @@ const Shop: NextPage = () => {
             <div className="md:w-1/2 p-6 flex flex-col justify-between">
               <div>
                 <h3 className="text-2xl font-bold text-gray-800 mb-2">{selectedProduct.name}</h3>
-                <p className="text-gray-600 text-sm mb-4">{selectedProduct.description}</p> {/* Adicionando a descrição */}
-                <p className="text-[#0000C8] text-xl font-extrabold mb-4">{convertPriceToPolicoins(selectedProduct.price)}</p>
+                <p className="text-gray-600 text-sm mb-4">{selectedProduct.description}</p>
+                <p className="text-[#0000C8] text-xl font-extrabold mb-4">{formatPrice(selectedProduct.price)}</p>
                 <div className="space-y-2 mb-6 text-sm text-gray-600">
-                  <p>Seu Saldo: <span className="font-semibold">{convertPointsToReal(userBalance)}</span></p>
-                  <p>Valor do Item: <span className="font-semibold">{convertPriceToPolicoins(selectedProduct.price)}</span></p>
-                  <p>Saldo Restante: <span className="font-semibold">{convertPointsToReal(getRemainingBalance(selectedProduct))}</span></p>
+                  <p>Seu saldo: <span className="font-semibold">{formatPrice(userBalance)}</span></p>
+                  <p>Preço do item: <span className="font-semibold">{formatPrice(selectedProduct.price)}</span></p>
+                  <p>Saldo restante: <span className="font-semibold">{formatPrice(getRemainingBalance(selectedProduct))}</span></p>
                 </div>
-                {userBalance < parseFloat(selectedProduct.price.replace("P$", "").replace(",", ".")) ? (
-                  <p className="text-red-500 font-semibold mb-4">Saldo insuficiente</p>
+                {userBalance < parseFloat(selectedProduct.price) ? (
+                  <p className="text-red-500 font-semibold mb-4">Insufficient balance</p>
                 ) : purchaseMessage ? (
                   <p className={`font-semibold mb-4 ${purchaseMessage.includes("Erro") ? "text-red-500" : "text-green-600"}`}>
                     {purchaseMessage}
@@ -241,15 +233,14 @@ const Shop: NextPage = () => {
               </div>
               <div className="flex gap-4">
                 <button
-                  className={`flex-1 py-3 font-semibold rounded-full transition-colors ${
-                    userBalance >= parseFloat(selectedProduct.price.replace("P$", "").replace(",", "."))
+                  className={`flex-1 py-3 font-semibold rounded-full transition-colors ${userBalance >= parseFloat(selectedProduct.price)
                       ? "bg-[#0000C8] text-white hover:bg-blue-700"
                       : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  }`}
+                    }`}
                   onClick={() => handlePurchase(selectedProduct)}
-                  disabled={userBalance < parseFloat(selectedProduct.price.replace("P$", "").replace(",", "."))}
+                  disabled={userBalance < parseFloat(selectedProduct.price)}
                 >
-                  Comprar Agora
+                  Comprar agora
                 </button>
                 <button
                   className="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-full hover:bg-gray-300 transition-colors"
@@ -290,7 +281,7 @@ const Shop: NextPage = () => {
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-3">Compra Solicitada!</h3>
             <p className="text-gray-600 mb-6 text-sm">
-              Sua solicitação foi enviada para análise. Confira seu email para mais detalhes.
+              Sua solicitação foi enviada para análise. Verifique seu e-mail para mais detalhes.
             </p>
             <button
               className="w-full py-3 bg-[#0000C8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors"
