@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// URL fixa da API de produção
+// URL fixa da API para teste
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const userService = {

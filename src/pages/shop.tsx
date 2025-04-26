@@ -134,7 +134,7 @@ const Shop: NextPage = () => {
                 <p className="text-gray-600">
                   Seu Saldo: <span className="font-bold text-[#0000C8]">{convertPointsToReal(userBalance)}</span>
                 </p>
-                <div className="relative w-64">
+                {/* <div className="relative w-64">
                   <input
                     type="text"
                     placeholder="Buscar produtos..."
@@ -154,7 +154,7 @@ const Shop: NextPage = () => {
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
-                </div>
+                </div> */}
               </div>
 
               {/* Products Grid */}
