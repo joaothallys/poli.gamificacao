@@ -7,8 +7,8 @@ import { BottomBar } from "~/components/BottomBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
 import Bau from "~/components/Bau";
 import BauCheio from "~/components/BauCheio";
-import BauPremio from "~/components/Container.svg";
 
+// Definição das interfaces para tipagem
 interface Mission {
   nivel: number;
   objetivo: number;
@@ -18,13 +18,14 @@ interface Mission {
 }
 
 interface SubTheme {
-  [key: string]: Mission[];
+  [key: string]: Mission[] | { error: string };
 }
 
 interface MetaProgress {
   [category: string]: SubTheme;
 }
 
+// Componente principal da página Learn
 const Learn: NextPage = () => {
   const { loginScreenState, setLoginScreenState } = useLoginScreen();
   const [metaProgress, setMetaProgress] = useState<MetaProgress | null>(null);
@@ -35,6 +36,7 @@ const Learn: NextPage = () => {
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
+  // Carrega o customerId do localStorage ao montar o componente
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
@@ -47,6 +49,7 @@ const Learn: NextPage = () => {
     }
   }, []);
 
+  // Busca os dados de progresso e pontos quando o customerId muda
   useEffect(() => {
     if (!customerId) return;
 
@@ -68,9 +71,9 @@ const Learn: NextPage = () => {
     };
 
     fetchData();
-    
   }, [customerId, token]);
 
+  // Formata valores monetários para o formato brasileiro
   const formatCurrency = (value: number) =>
     value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -78,7 +81,7 @@ const Learn: NextPage = () => {
     <>
       <LeftBar selectedTab="Learn" />
 
-      {/* Loading Overlay */}
+      {/* Overlay de carregamento */}
       {isLoading && (
         <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
           <div className="flex flex-col items-center">
@@ -88,7 +91,7 @@ const Learn: NextPage = () => {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Conteúdo principal */}
       {!isLoading && (
         <>
           <div className="flex flex-col lg:flex-row justify-center gap-3 pt-14 sm:p-6 sm:pt-10 md:ml-24 lg:ml-64 lg:gap-12">
@@ -99,11 +102,12 @@ const Learn: NextPage = () => {
               </div>
 
               <div className="flex flex-col gap-6">
-                {metaProgress && Object.entries(metaProgress).map(([category, subThemes]) => (
-                  category !== "customer_id" && (
-                    <CategorySection key={category} category={category} subThemes={subThemes} />
-                  )
-                ))}
+                {metaProgress &&
+                  Object.entries(metaProgress).map(([category, subThemes]) =>
+                    category !== "customer_id" && (
+                      <CategorySection key={category} category={category} subThemes={subThemes} />
+                    )
+                  )}
               </div>
             </div>
 
@@ -120,7 +124,6 @@ const Learn: NextPage = () => {
                   </div>
                   {showTooltip && (
                     <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10">
-                      {/* Seta do tooltip */}
                       <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-[#F5F5F5] border-b-8 border-b-transparent" />
                       <div className="flex flex-col gap-0.5 max-w-[200px]">
                         <span className="whitespace-nowrap">Os seus Policoins podem levar</span>
@@ -158,31 +161,113 @@ const Learn: NextPage = () => {
   );
 };
 
+// Função para capitalizar a primeira letra de uma string
 const capitalizeFirstLetter = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
-const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-    <h2 className="text-lg font-bold text-gray-700 mb-4">
-      {capitalizeFirstLetter(category.replace(/_/g, " "))}
-    </h2>
-    <div className="flex flex-col gap-6">
-      {Object.entries(subThemes).map(([subTheme, missions]) => (
-        <SubThemeSection key={subTheme} subTheme={subTheme} missions={missions} />
-      ))}
-    </div>
-  </div>
-);
+// Componente para exibir uma categoria (ex.: "Pay", "Flow")
+const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => {
+  const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
+  // Agrupa todas as missões completadas de todos os sub-temas
+  const allMissions = Object.entries(subThemes).flatMap(([subTheme, missions]) => {
+    if (!Array.isArray(missions)) {
+      return [];
+    }
+    return missions.map((mission) => ({ ...mission, subTheme }));
+  });
+  const completedMissions = allMissions.filter((mission) => mission.percentual >= 100.0);
+
+  // Filtra os sub-temas para mostrar apenas aqueles com missões ativas
+  const activeSubThemes = Object.entries(subThemes).filter(([, missions]) => {
+    if (!Array.isArray(missions)) {
+      return false;
+    }
+    return missions.some((mission) => mission.percentual < 100.0);
+  });
+
+  // Verifica se há um erro na categoria
+  const hasError = Object.values(subThemes).some(
+    (missions) => !Array.isArray(missions) && typeof missions === "object" && "error" in missions
+  );
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <h2 className="text-lg font-bold text-gray-700 mb-4">
+        {capitalizeFirstLetter(category.replace(/_/g, " "))}
+      </h2>
+
+      {hasError ? (
+        <p className="text-red-600 text-sm">
+          Erro ao carregar missões para esta categoria. Tente novamente mais tarde.
+        </p>
+      ) : (
+        <>
+          {/* Espaçamento entre sub-temas: 24px (gap-6) */}
+          <div className="flex flex-col gap-6">
+            {activeSubThemes.length > 0 ? (
+              activeSubThemes.map(([subTheme, missions]) => (
+                <SubThemeSection key={subTheme} subTheme={subTheme} missions={missions as Mission[]} />
+              ))
+            ) : (
+              <p className="text-gray-600 text-sm">Nenhuma missão ativa no momento.</p>
+            )}
+          </div>
+
+          {/* Seção de missões concluídas: 24px de margem superior (mt-6) */}
+          {completedMissions.length > 0 && (
+            <div className="flex flex-col gap-2 mt-6">
+              <button
+                onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
+                className="flex justify-between items-center w-full text-gray-700 font-medium text-sm"
+              >
+                <span>Concluídas</span>
+                <span className="text-gray-500">{isCompletedExpanded ? "▲" : "▼"}</span>
+              </button>
+              {isCompletedExpanded && (
+                <div className="flex flex-col gap-6">
+                  {completedMissions.map((mission) => (
+                    <div key={`${mission.subTheme}-${mission.nivel}`} className="flex flex-col gap-1">
+                      <p className="text-gray-600 text-sm font-medium">
+                        {capitalizeFirstLetter(mission.subTheme.replace(/_/g, " ")).toUpperCase()}
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        Nível {mission.nivel}: {capitalizeFirstLetter(mission.descricao)} • (Ganhe {formatNumber(mission.objetivo)} Policoins)
+                      </p>
+                      <div className="relative h-4 bg-gray-200 rounded-full w-full">
+                        <div
+                          className="absolute left-0 top-0 h-4 bg-[#0000C8] rounded-full"
+                          style={{ width: "100%" }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                          {formatNumber(mission.valor)} / {formatNumber(mission.objetivo)}
+                        </div>
+                        <div className="absolute right-[-10px] top-[-8px] h-8 w-8">
+                          <BauCheio />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// Componente para exibir um sub-tema (ex.: "criar_cards_flow")
 const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: Mission[] }) => {
   if (!Array.isArray(missions) || missions.length === 0) return null;
 
-  const currentMission = missions.reduce((active, mission, index) => {
-    if (mission.percentual < 100) return mission;
-    const nextMission = missions[index + 1];
-    return nextMission && nextMission.percentual < 100 ? active : mission;
-  }, missions[0]);
+  // Filtra apenas missões ativas
+  const activeMissions = missions.filter((mission) => mission.percentual < 100);
+  if (activeMissions.length === 0) return null;
 
+  // Garante que há uma missão ativa para exibir
+  const currentMission = activeMissions[0];
   if (!currentMission) return null;
 
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
@@ -218,5 +303,8 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
     </div>
   );
 };
+
+// Função para formatar números no formato brasileiro
+const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
 export default Learn;
