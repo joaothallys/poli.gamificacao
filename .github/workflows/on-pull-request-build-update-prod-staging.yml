@@ -1,0 +1,24 @@
+name: Prod/Staging Build and Update
+
+on:
+  push:
+    tags:
+      - 'v*\.*\.*'
+
+jobs:
+  dockerBuildUpdateStaging:
+    uses: poli-digital/templates/.github/workflows/dockerBuildUpdateStaging.yml@main
+    secrets: inherit
+
+  dockerBuildUpdateProd:
+    uses: poli-digital/templates/.github/workflows/dockerBuildUpdateProd.yml@main
+    needs: dockerBuildUpdateStaging
+    secrets: inherit
+
+  checkVersionCards:
+    uses: poli-digital/templates/.github/workflows/checkVersionCards.yml@main
+    needs: dockerBuildUpdateProd
+    secrets: inherit
+    with:
+      ecr_username: ${{ needs.dockerBuildUpdateProd.outputs.ecr_username }}
+      ecr_pass: ${{ needs.dockerBuildUpdateProd.outputs.ecr_pass }}
