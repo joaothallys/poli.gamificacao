@@ -32,7 +32,6 @@ const Shop: NextPage = () => {
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
-        console.log("Parsed user_data:", parsedData);
         setCustomerId(parsedData?.first_account ?? null);
         setUserUuid(parsedData?.user_uuid ?? null);
         if (!parsedData?.first_account) {
@@ -42,11 +41,9 @@ const Shop: NextPage = () => {
           setError("UUID do usuário não encontrado. Faça login novamente.");
         }
       } catch (error) {
-        console.error("Erro ao parsear user_data:", error);
         setError("Erro ao carregar dados do usuário. Tente novamente.");
       }
     } else {
-      console.log("Nenhum user_data encontrado no localStorage");
       setError("Nenhum dado de usuário encontrado. Faça login.");
     }
   }, []);
@@ -66,7 +63,6 @@ const Shop: NextPage = () => {
       } while (page <= lastPage);
       setProducts(allProducts);
     } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
       setError("Falha ao carregar produtos. Tente novamente mais tarde.");
     } finally {
       setIsLoading(false);
@@ -82,7 +78,6 @@ const Shop: NextPage = () => {
       const response = await userService.getCustomerTotalPoints(customerId, token);
       setUserBalance(response.total_points);
     } catch (error) {
-      console.error("Erro ao buscar saldo do usuário:", error);
       setError("Falha ao carregar saldo do usuário.");
     }
   }, [customerId, token]);
@@ -121,9 +116,7 @@ const Shop: NextPage = () => {
     }
     try {
       setPurchaseMessage("Processando compra...");
-      console.log("Enviando transação com:", { customerId, productId: product.id, userUuid, token });
       const response = await userService.postTransaction(customerId, 0, product.id, token, userUuid);
-      console.log("Resposta da transação:", response);
       if (response.status === 200 || response.status === 202) {
         setPurchaseMessage("");
         setShowSuccessModal(true);
@@ -196,23 +189,23 @@ const Shop: NextPage = () => {
                         {products.map((product) => (
                           <div
                             key={product.id}
-                            className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center"
+                            className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between items-center min-h-[400px]"
                           >
                             <div
-                              className="cursor-pointer mb-4"
+                              className="cursor-pointer mb-4 flex items-center justify-center h-48 w-48"
                               onClick={() => handleProductClick(product)}
                             >
                               <Image
                                 src={product.link_img}
                                 alt={product.name}
-                                className="h-48 w-48 object-cover rounded-lg"
+                                className="h-full w-full object-contain rounded-lg"
                                 width={192}
                                 height={192}
                                 loading="lazy"
                                 onError={(e) => (e.currentTarget.src = "/fallback-image.jpg")}
                               />
                             </div>
-                            <h4 className="text-lg font-semibold text-gray-800 text-center mb-2">
+                            <h4 className="text-lg font-semibold text-gray-800 text-center mb-2 line-clamp-2 h-14">
                               {product.name}
                             </h4>
                             <p className="text-[#0000C8] text-xl font-bold mb-4">{formatPrice(product.price)}</p>
