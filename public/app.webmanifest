@@ -1,19 +1,19 @@
 {
-  "name": "React Duolingo Clone",
+  "name": "Poli Gamificação",
   "short_name": "Duoclone",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0",
   "theme_color": "#0A0",
-  "description": "A React Duolingo clone web app written with React, TypeScript, Next.js, TailwindCSS, and Zustand.",
+  "description": "",
   "icons": [
     {
-      "src": "/favicon-16x16.png",
+      "src": "/favicon.ico",
       "sizes": "16x16",
       "type": "image/png"
     },
     {
-      "src": "/favicon-32x32.png",
+      "src": "/favicon.ico",
       "sizes": "32x32",
       "type": "image/png"
     },
@@ -23,17 +23,17 @@
       "type": "image/png"
     },
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/favicon.ico",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "/android-chrome-192x192.png",
+      "src": "/favicon.ico",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/android-chrome-512x512.png",
+      "src": "/favicon.ico",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

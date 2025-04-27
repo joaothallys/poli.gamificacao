@@ -7,8 +7,8 @@ import { BottomBar } from "~/components/BottomBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
 import Bau from "~/components/Bau";
 import BauCheio from "~/components/BauCheio";
-import BauPremio from "~/components/Container.svg";
 
+// Definição das interfaces para tipagem
 interface Mission {
   nivel: number;
   objetivo: number;
@@ -18,13 +18,49 @@ interface Mission {
 }
 
 interface SubTheme {
-  [key: string]: Mission[];
+  [key: string]: Mission[] | { error: string };
 }
 
 interface MetaProgress {
   [category: string]: SubTheme;
 }
 
+// Definição dos níveis e seus limites
+const levels = [
+  { name: "Starter", min: 0, max: 5000 },
+  { name: "Bronze", min: 5001, max: 15000 },
+  { name: "Prata", min: 15001, max: 50000 },
+  { name: "Ouro", min: 50001, max: 100000 },
+  { name: "Diamante", min: 100001, max: 500000 },
+  { name: "UCE", min: 500001, max: Infinity },
+];
+
+// Função para determinar o nível atual e progresso
+const getLevelInfo = (points: number) => {
+  const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
+  if (!currentLevel) return { name: "Starter", progress: 0, current: 0, next: 5000 };
+
+  const nextLevel = levels[levels.indexOf(currentLevel) + 1] || currentLevel;
+  const progress = ((points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100;
+  return {
+    name: currentLevel.name,
+    progress: Math.min(progress, 100),
+    current: points,
+    next: nextLevel.max,
+  };
+};
+
+// Mapeamento de níveis para ícones
+const levelIcons: { [key: string]: string } = {
+  Starter: "/starter.svg",
+  Bronze: "/bronze.svg",
+  Prata: "/prata.svg",
+  Ouro: "/ouro.svg",
+  Diamante: "/diamante.svg",
+  UCE: "/uce.svg",
+};
+
+// Componente principal da página Learn
 const Learn: NextPage = () => {
   const { loginScreenState, setLoginScreenState } = useLoginScreen();
   const [metaProgress, setMetaProgress] = useState<MetaProgress | null>(null);
@@ -32,21 +68,32 @@ const Learn: NextPage = () => {
   const [customerId, setCustomerId] = useState<number | null>(null);
   const [totalPoints, setTotalPoints] = useState<number | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
+  const QTD_LOGS = 1;
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
+    console.log("Raw user_data from localStorage:", userData);
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
+        console.log("Parsed user_data:", parsedData); // Debug: Log parsed data
         setCustomerId(parsedData?.first_account ?? null);
+        const logsCount = parsedData?.logs_count ?? 0;
+        console.log("logs_count value:", logsCount); // Debug: Log logs_count
+        setShowTerms(logsCount === QTD_LOGS); // Show terms if logs_count matches QTD_LOGS
+        console.log("showTerms set to:", logsCount === QTD_LOGS); // Debug: Log showTerms state
       } catch (error) {
-        console.error("Erro ao obter customer_id:", error);
+        console.error("Erro ao parsear dados do usuário:", error);
       }
+    } else {
+      console.log("No user_data found in localStorage");
     }
   }, []);
 
+  // Busca os dados de progresso e pontos quando o customerId muda
   useEffect(() => {
     if (!customerId) return;
 
@@ -68,17 +115,44 @@ const Learn: NextPage = () => {
     };
 
     fetchData();
-    
   }, [customerId, token]);
 
+  // Função para aceitar os termos e ocultar a mensagem
+  const handleAcceptTerms = () => {
+    const userData = localStorage.getItem("user_data");
+    console.log("update:", userData);
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        parsedData.logs_count = QTD_LOGS + 1; // Increment QTD_LOGS to ensure it's different
+        localStorage.setItem("user_data", JSON.stringify(parsedData));
+        console.log("Updated user_data in localStorage:", localStorage.getItem("user_data"));
+        setShowTerms(false);
+      } catch (error) {
+        console.error("Erro ao atualizar logs_count:", error);
+      }
+    }
+  };
+
+  // Formata valores monetários para o formato brasileiro
   const formatCurrency = (value: number) =>
     value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
+
+  // Obtém informações do nível atual
+  const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000 };
+
+  // Debug: Log the level and image path
+  useEffect(() => {
+    console.log(`Current Level: ${levelInfo.name}, Points: ${totalPoints}, Image: ${levelIcons[levelInfo.name]}`);
+  }, [levelInfo.name, totalPoints]);
 
   return (
     <>
       <LeftBar selectedTab="Learn" />
 
-      {/* Loading Overlay */}
+      {/* Overlay de carregamento */}
       {isLoading && (
         <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
           <div className="flex flex-col items-center">
@@ -88,7 +162,7 @@ const Learn: NextPage = () => {
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Conteúdo principal */}
       {!isLoading && (
         <>
           <div className="flex flex-col lg:flex-row justify-center gap-3 pt-14 sm:p-6 sm:pt-10 md:ml-24 lg:ml-64 lg:gap-12">
@@ -99,15 +173,17 @@ const Learn: NextPage = () => {
               </div>
 
               <div className="flex flex-col gap-6">
-                {metaProgress && Object.entries(metaProgress).map(([category, subThemes]) => (
-                  category !== "customer_id" && (
-                    <CategorySection key={category} category={category} subThemes={subThemes} />
-                  )
-                ))}
+                {metaProgress &&
+                  Object.entries(metaProgress).map(([category, subThemes]) =>
+                    category !== "customer_id" && (
+                      <CategorySection key={category} category={category} subThemes={subThemes} />
+                    )
+                  )}
               </div>
             </div>
 
             <div className="flex flex-col items-start w-full lg:w-auto">
+              {/* Seus Policoins */}
               <div className="flex justify-between w-full mb-2">
                 <div className="relative flex items-center">
                   <h2 className="text-xl font-bold text-gray-700">Seus Policoins</h2>
@@ -120,7 +196,6 @@ const Learn: NextPage = () => {
                   </div>
                   {showTooltip && (
                     <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10">
-                      {/* Seta do tooltip */}
                       <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-[#F5F5F5] border-b-8 border-b-transparent" />
                       <div className="flex flex-col gap-0.5 max-w-[200px]">
                         <span className="whitespace-nowrap">Os seus Policoins podem levar</span>
@@ -133,6 +208,52 @@ const Learn: NextPage = () => {
                   {totalPoints !== null ? formatCurrency(totalPoints) : "Carregando..."}
                 </div>
               </div>
+
+              {/* Novo bloco: Seu Nível */}
+              <div className="w-full lg:w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200 mb-4">
+                <div className="flex flex-col items-center mb-2">
+                  <h2 className="text-xl font-bold text-gray-700">Seu Nível</h2>
+                  <div
+                    className="mt-2 flex items-center justify-center gap-[10px] p-2"
+                    style={{
+                      width: "94px",
+                      height: "80px",
+                      borderRadius: "8px",
+                      background: "radial-gradient(64.37% 64.37% at 69.01% 35.62%, #ACADEA 0%, #6666DE 100%)",
+                    }}
+                  >
+                    <img
+                      key={levelInfo.name}
+                      src={levelIcons[levelInfo.name] || "/starter.svg"}
+                      alt={`${levelInfo.name} Level Icon`}
+                      style={{ width: "78px", height: "51.68278121948242px" }}
+                      onError={(e) => {
+                        console.error(`Failed to load image for level ${levelInfo.name}: ${levelIcons[levelInfo.name] || "/starter.svg"}`);
+                        e.currentTarget.src = "/fallback.svg";
+                      }}
+                    />
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm mb-2 text-center">
+                  {levelInfo.name === "UCE"
+                    ? "Incrível, você ultrapassou 50 mil Policoins e se tornou nível ouro!"
+                    : `Suba de nível ao alcançar ${formatNumber(levelInfo.next)} Policoins!`}
+                </p>
+                <div className="relative h-4 bg-gray-200 rounded-full w-full">
+                  <div
+                    className="absolute left-0 top-0 h-4 bg-[#0000C8] rounded-full"
+                    style={{ width: `${levelInfo.progress}%` }}
+                  />
+                  <div
+                    className="absolute inset-0 flex items-center justify-center text-xs font-bold"
+                    style={{ color: levelInfo.progress > 50 ? "white" : "black" }}
+                  >
+                    {formatNumber(levelInfo.current)} / {formatNumber(levelInfo.next)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Fale Conosco */}
               <div className="w-full lg:w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200">
                 <p className="text-gray-600 text-sm text-center">
                   Precisa de ajuda para realizar missões ou resgatar prêmios?
@@ -153,36 +274,140 @@ const Learn: NextPage = () => {
         </>
       )}
 
-      <BottomBar selectedTab="Learn" />
+      {/* Footer with Terms of Use Message */}
+      <div className="relative">
+        <BottomBar selectedTab="Learn" />
+        {showTerms && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-between items-center shadow-lg z-50">
+            <div className="flex-1 text-gray-700 text-sm">
+              <span className="font-bold">Termos de uso</span>
+              <br />
+              Para participar do programa, é necessário concordar com os termos de uso e a política de privacidade. Ao aceitar, você declara estar ciente e de acordo com as regras e condições estabelecidas. Saiba mais em nossa{" "}
+              <a
+                href="https://docs.google.com/document/d/1t-ng5n29UiPdDgK8mcXtCWDxidn3gNCWK7Xg9_T6Qps/edit?tab=t.0"
+                className="text-blue-600 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Política do Programa
+              </a>.
+            </div>
+            <button
+              onClick={() => handleAcceptTerms()}
+              className="ml-4 bg-[#0000C8] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Aceitar termos
+            </button>
+          </div>
+        )}
+      </div>
     </>
   );
 };
 
+// Função para capitalizar a primeira letra de uma string
 const capitalizeFirstLetter = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
-const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => (
-  <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
-    <h2 className="text-lg font-bold text-gray-700 mb-4">
-      {capitalizeFirstLetter(category.replace(/_/g, " "))}
-    </h2>
-    <div className="flex flex-col gap-6">
-      {Object.entries(subThemes).map(([subTheme, missions]) => (
-        <SubThemeSection key={subTheme} subTheme={subTheme} missions={missions} />
-      ))}
-    </div>
-  </div>
-);
+// Componente para exibir uma categoria (ex.: "Pay", "Flow")
+const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => {
+  const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
+  // Agrupa todas as missões completadas de todos os sub-temas
+  const allMissions = Object.entries(subThemes).flatMap(([subTheme, missions]) => {
+    if (!Array.isArray(missions)) {
+      return [];
+    }
+    return missions.map((mission) => ({ ...mission, subTheme }));
+  });
+  const completedMissions = allMissions.filter((mission) => mission.percentual >= 100.0);
+
+  // Filtra os sub-temas para mostrar apenas aqueles com missões ativas
+  const activeSubThemes = Object.entries(subThemes).filter(([, missions]) => {
+    if (!Array.isArray(missions)) {
+      return false;
+    }
+    return missions.some((mission) => mission.percentual < 100.0);
+  });
+
+  // Verifica se há um erro na categoria
+  const hasError = Object.values(subThemes).some(
+    (missions) => !Array.isArray(missions) && typeof missions === "object" && "error" in missions
+  );
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+      <h2 className="text-lg font-bold text-gray-700 mb-4">
+        {capitalizeFirstLetter(category.replace(/_/g, " "))}
+      </h2>
+
+      {hasError ? (
+        <p className="text-red-600 text-sm">
+          Erro ao carregar missões para esta categoria. Tente novamente mais tarde.
+        </p>
+      ) : (
+        <>
+          <div className="flex flex-col gap-6">
+            {activeSubThemes.length > 0 ? (
+              activeSubThemes.map(([subTheme, missions]) => (
+                <SubThemeSection key={subTheme} subTheme={subTheme} missions={missions as Mission[]} />
+              ))
+            ) : (
+              <p className="text-gray-600 text-sm">Nenhuma missão ativa no momento.</p>
+            )}
+          </div>
+
+          {completedMissions.length > 0 && (
+            <div className="flex flex-col gap-2 mt-6">
+              <button
+                onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
+                className="flex justify-between items-center w-full text-gray-700 font-medium text-sm"
+              >
+                <span>Concluídas</span>
+                <span className="text-gray-500">{isCompletedExpanded ? "▲" : "▼"}</span>
+              </button>
+              {isCompletedExpanded && (
+                <div className="flex flex-col gap-6">
+                  {completedMissions.map((mission) => (
+                    <div key={`${mission.subTheme}-${mission.nivel}`} className="flex flex-col gap-1">
+                      <p className="text-gray-600 text-sm font-medium">
+                        {capitalizeFirstLetter(mission.subTheme.replace(/_/g, " "))}
+                      </p>
+                      <p className="text-gray-600 text-sm">
+                        Nível {mission.nivel}: {capitalizeFirstLetter(mission.descricao)} • (Ganhe {formatNumber(mission.objetivo)} Policoins)
+                      </p>
+                      <div className="relative h-4 bg-gray-200 rounded-full w-full">
+                        <div
+                          className="absolute left-0 top-0 h-4 bg-[#0000C8] rounded-full"
+                          style={{ width: "100%" }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                          {formatNumber(mission.valor)} / {formatNumber(mission.objetivo)}
+                        </div>
+                        <div className="absolute right-[-10px] top-[-8px] h-8 w-8">
+                          <BauCheio />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
+// Componente para exibir um sub-tema (ex.: "criar_cards_flow")
 const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: Mission[] }) => {
   if (!Array.isArray(missions) || missions.length === 0) return null;
 
-  const currentMission = missions.reduce((active, mission, index) => {
-    if (mission.percentual < 100) return mission;
-    const nextMission = missions[index + 1];
-    return nextMission && nextMission.percentual < 100 ? active : mission;
-  }, missions[0]);
+  const activeMissions = missions.filter((mission) => mission.percentual < 100);
+  if (activeMissions.length === 0) return null;
 
+  const currentMission = activeMissions[0];
   if (!currentMission) return null;
 
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
@@ -218,5 +443,7 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
     </div>
   );
 };
+
+const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
 export default Learn;
