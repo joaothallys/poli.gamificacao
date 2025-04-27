@@ -1,29 +1,14 @@
 import { type NextPage } from "next";
 import { useEffect, useState } from "react";
 import userService from "~/services/userService";
+import postUserTermsAcceptance from "~/services/userService";
 import { toast } from "react-toastify";
 import { LeftBar } from "~/components/LeftBar";
 import { BottomBar } from "~/components/BottomBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
 import Bau from "~/components/Bau";
 import BauCheio from "~/components/BauCheio";
-
-// Definição das interfaces para tipagem
-interface Mission {
-  nivel: number;
-  objetivo: number;
-  descricao: string;
-  valor: number;
-  percentual: number;
-}
-
-interface SubTheme {
-  [key: string]: Mission[] | { error: string };
-}
-
-interface MetaProgress {
-  [category: string]: SubTheme;
-}
+import { Mission, SubTheme, MetaProgress, LevelInfo } from "~/types/interfaces";
 
 // Definição dos níveis e seus limites
 const levels = [
@@ -35,15 +20,7 @@ const levels = [
   { name: "UCE", min: 500001, max: Infinity },
 ];
 
-interface LevelInfo {
-  name: string;
-  progress: number;
-  current: number;
-  next: number;
-  max: number;
-}
 
-// Função para determinar o nível atual e progresso
 const getLevelInfo = (points: number): LevelInfo => {
   const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
   if (!currentLevel) {
@@ -82,7 +59,7 @@ const Learn: NextPage = () => {
   const [showTerms, setShowTerms] = useState(false);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
-  const QTD_LOGS = 1;
+  const QTD_LOGS = 40;
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
@@ -123,17 +100,35 @@ const Learn: NextPage = () => {
   }, [customerId, token]);
 
   // Função para aceitar os termos e ocultar a mensagem
-  const handleAcceptTerms = () => {
+  const handleAcceptTerms = async () => {
     const userData = localStorage.getItem("user_data");
-    if (userData) {
-      try {
-        const parsedData = JSON.parse(userData);
-        parsedData.logs_count = QTD_LOGS + 1; // Increment QTD_LOGS to ensure it's different
-        localStorage.setItem("user_data", JSON.stringify(parsedData));
-        setShowTerms(false);
-      } catch (error) {
-        console.error("Erro ao atualizar logs_count:", error);
+    if (!userData) {
+      toast.error("Dados do usuário não encontrados. Faça login novamente.");
+      return;
+    }
+
+    let parsedData;
+    let userUuid;
+    try {
+      parsedData = JSON.parse(userData);
+      userUuid = parsedData?.user_uuid;
+      if (!userUuid) {
+        toast.error("UUID do usuário não encontrado. Faça login novamente.");
+        return;
       }
+    } catch (error) {
+      console.error("Erro ao parsear dados do usuário:", error);
+      toast.error("Erro ao processar dados do usuário");
+      return;
+    }
+
+    try {
+      await userService.postUserTermsAcceptance(userUuid, token);
+      parsedData.logs_count = QTD_LOGS + 1;
+      localStorage.setItem("user_data", JSON.stringify(parsedData));
+      setShowTerms(false);
+    } catch (error) {
+      console.error("Erro ao aceitar termos:", error);
     }
   };
 

@@ -4,14 +4,7 @@ import { BottomBar } from "~/components/BottomBar";
 import { LeftBar } from "~/components/LeftBar";
 import Image from "next/image";
 import userService from "~/services/userService";
-
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-  link_img: string;
-  description: string;
-}
+import { Product, TransactionResponse } from "~/types/interfaces";
 
 const Shop: NextPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,6 +16,7 @@ const Shop: NextPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [customerId, setCustomerId] = useState<number | null>(null);
   const [userUuid, setUserUuid] = useState<string | null>(null);
+  const [transactionData, setTransactionData] = useState<TransactionResponse["data"] | null>(null);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
@@ -101,6 +95,7 @@ const Shop: NextPage = () => {
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
+    setTransactionData(null);
     handleCloseModal();
   };
 
@@ -110,6 +105,10 @@ const Shop: NextPage = () => {
       return;
     }
     const priceNum = parseFloat(product.price);
+    if (isNaN(priceNum)) {
+      setPurchaseMessage("Erro: Preço do produto inválido.");
+      return;
+    }
     if (userBalance < priceNum) {
       setPurchaseMessage("Saldo insuficiente para realizar a compra.");
       return;
@@ -117,7 +116,9 @@ const Shop: NextPage = () => {
     try {
       setPurchaseMessage("Processando compra...");
       const response = await userService.postTransaction(customerId, 0, product.id, token, userUuid);
-      if (response.status === 200 || response.status === 202) {
+      if (response.status === 200 || 202) {
+        const transaction = response.data as TransactionResponse["data"];
+        setTransactionData(transaction);
         setPurchaseMessage("");
         setShowSuccessModal(true);
         await fetchUserBalance();
@@ -125,6 +126,7 @@ const Shop: NextPage = () => {
         setPurchaseMessage(`Falha ao processar a compra. Status: ${response.status}`);
       }
     } catch (error) {
+      console.error("Erro ao processar compra:", error);
       setPurchaseMessage("Falha ao processar compra. Tente novamente.");
     }
   };
@@ -316,7 +318,9 @@ const Shop: NextPage = () => {
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-3">Compra Solicitada!</h3>
             <p className="text-gray-600 mb-6 text-sm">
-              Sua solicitação foi enviada para análise. Verifique seu e-mail para mais detalhes.
+              {transactionData
+                ? `Sua compra de "${transactionData.product_name}" foi solicitada com sucesso! Status: ${transactionData.transaction_status}. Verifique seu e-mail para mais detalhes.`
+                : "Sua solicitação foi enviada para análise. Verifique seu e-mail para mais detalhes."}
             </p>
             <button
               className="w-full py-3 bg-[#0000C8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors"
