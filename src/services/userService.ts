@@ -34,7 +34,6 @@ const userService = {
     }
   },
 
-  // Função atualizada em src/services/userService.ts
   postTransaction: async (
     customerId: number,
     transactionalType: number,
@@ -123,6 +122,24 @@ const userService = {
       return response.data;
     } catch (error) {
       throw error;
+    }
+  },
+
+  postUserTermsAcceptance: async (userUuid: string, token: string): Promise<void> => {
+    const apiHost = `${API_URL}`;
+    const response = await fetch(`${apiHost}/post-user-terms-acceptance`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: new URLSearchParams({ user_uuid: userUuid }).toString(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Falha ao aceitar termos");
     }
   },
 };
