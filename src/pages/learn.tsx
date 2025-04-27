@@ -68,19 +68,28 @@ const Learn: NextPage = () => {
   const [customerId, setCustomerId] = useState<number | null>(null);
   const [totalPoints, setTotalPoints] = useState<number | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
+  const QTD_LOGS = 1;
 
-  // Carrega o customerId do localStorage ao montar o componente
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
+    console.log("Raw user_data from localStorage:", userData);
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
+        console.log("Parsed user_data:", parsedData); // Debug: Log parsed data
         setCustomerId(parsedData?.first_account ?? null);
+        const logsCount = parsedData?.logs_count ?? 0;
+        console.log("logs_count value:", logsCount); // Debug: Log logs_count
+        setShowTerms(logsCount === QTD_LOGS); // Show terms if logs_count matches QTD_LOGS
+        console.log("showTerms set to:", logsCount === QTD_LOGS); // Debug: Log showTerms state
       } catch (error) {
-        console.error("Erro ao obter customer_id:", error);
+        console.error("Erro ao parsear dados do usuário:", error);
       }
+    } else {
+      console.log("No user_data found in localStorage");
     }
   }, []);
 
@@ -107,6 +116,23 @@ const Learn: NextPage = () => {
 
     fetchData();
   }, [customerId, token]);
+
+  // Função para aceitar os termos e ocultar a mensagem
+  const handleAcceptTerms = () => {
+    const userData = localStorage.getItem("user_data");
+    console.log("update:", userData);
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        parsedData.logs_count = QTD_LOGS + 1; // Increment QTD_LOGS to ensure it's different
+        localStorage.setItem("user_data", JSON.stringify(parsedData));
+        console.log("Updated user_data in localStorage:", localStorage.getItem("user_data"));
+        setShowTerms(false);
+      } catch (error) {
+        console.error("Erro ao atualizar logs_count:", error);
+      }
+    }
+  };
 
   // Formata valores monetários para o formato brasileiro
   const formatCurrency = (value: number) =>
@@ -197,13 +223,13 @@ const Learn: NextPage = () => {
                     }}
                   >
                     <img
-                      key={levelInfo.name} // Force re-render when level changes
+                      key={levelInfo.name}
                       src={levelIcons[levelInfo.name] || "/starter.svg"}
                       alt={`${levelInfo.name} Level Icon`}
                       style={{ width: "78px", height: "51.68278121948242px" }}
                       onError={(e) => {
                         console.error(`Failed to load image for level ${levelInfo.name}: ${levelIcons[levelInfo.name] || "/starter.svg"}`);
-                        e.currentTarget.src = "/fallback.svg"; // Fallback image
+                        e.currentTarget.src = "/fallback.svg";
                       }}
                     />
                   </div>
@@ -248,7 +274,33 @@ const Learn: NextPage = () => {
         </>
       )}
 
-      <BottomBar selectedTab="Learn" />
+      {/* Footer with Terms of Use Message */}
+      <div className="relative">
+        <BottomBar selectedTab="Learn" />
+        {showTerms && (
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-between items-center shadow-lg z-50">
+            <div className="flex-1 text-gray-700 text-sm">
+              <span className="font-bold">Termos de uso</span>
+              <br />
+              Para participar do programa, é necessário concordar com os termos de uso e a política de privacidade. Ao aceitar, você declara estar ciente e de acordo com as regras e condições estabelecidas. Saiba mais em nossa{" "}
+              <a
+                href="https://docs.google.com/document/d/1t-ng5n29UiPdDgK8mcXtCWDxidn3gNCWK7Xg9_T6Qps/edit?tab=t.0"
+                className="text-blue-600 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Política do Programa
+              </a>.
+            </div>
+            <button
+              onClick={() => handleAcceptTerms()}
+              className="ml-4 bg-[#0000C8] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Aceitar termos
+            </button>
+          </div>
+        )}
+      </div>
     </>
   );
 };
@@ -295,7 +347,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
         </p>
       ) : (
         <>
-          {/* Espaçamento entre sub-temas: 24px (gap-6) */}
           <div className="flex flex-col gap-6">
             {activeSubThemes.length > 0 ? (
               activeSubThemes.map(([subTheme, missions]) => (
@@ -306,7 +357,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
             )}
           </div>
 
-          {/* Seção de missões concluídas: 24px de margem superior (mt-6) */}
           {completedMissions.length > 0 && (
             <div className="flex flex-col gap-2 mt-6">
               <button
@@ -354,11 +404,9 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
 const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: Mission[] }) => {
   if (!Array.isArray(missions) || missions.length === 0) return null;
 
-  // Filtra apenas missões ativas
   const activeMissions = missions.filter((mission) => mission.percentual < 100);
   if (activeMissions.length === 0) return null;
 
-  // Garante que há uma missão ativa para exibir
   const currentMission = activeMissions[0];
   if (!currentMission) return null;
 
@@ -396,7 +444,6 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
   );
 };
 
-// Função para formatar números no formato brasileiro
 const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
 export default Learn;
