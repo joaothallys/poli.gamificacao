@@ -59,7 +59,7 @@ const Learn: NextPage = () => {
   const [showTerms, setShowTerms] = useState(false);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
-  const QTD_LOGS = 40;
+  const QTD_LOGS = 1;
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
@@ -68,14 +68,13 @@ const Learn: NextPage = () => {
         const parsedData = JSON.parse(userData);
         setCustomerId(parsedData?.first_account ?? null);
         const logsCount = parsedData?.logs_count ?? 0;
-        setShowTerms(logsCount === QTD_LOGS); // Show terms if logs_count matches QTD_LOGS
+        setShowTerms(logsCount === QTD_LOGS);
       } catch (error) {
         console.error("Erro ao parsear dados do usuário:", error);
       }
     }
   }, []);
 
-  // Busca os dados de progresso e pontos quando o customerId muda
   useEffect(() => {
     if (!customerId) return;
 
@@ -99,7 +98,6 @@ const Learn: NextPage = () => {
     fetchData();
   }, [customerId, token]);
 
-  // Função para aceitar os termos e ocultar a mensagem
   const handleAcceptTerms = async () => {
     const userData = localStorage.getItem("user_data");
     if (!userData) {
@@ -132,13 +130,11 @@ const Learn: NextPage = () => {
     }
   };
 
-  // Formata valores monetários para o formato brasileiro
   const formatCurrency = (value: number) =>
     value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
-  // Obtém informações do nível atual
   const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
 
 
@@ -297,15 +293,12 @@ const Learn: NextPage = () => {
   );
 };
 
-// Função para capitalizar a primeira letra de uma string
 const capitalizeFirstLetter = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
-// Componente para exibir uma categoria (ex.: "Pay", "Flow")
 const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => {
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
-  // Agrupa todas as missões completadas de todos os sub-temas
   const allMissions = Object.entries(subThemes).flatMap(([subTheme, missions]) => {
     if (!Array.isArray(missions)) {
       return [];
@@ -314,7 +307,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
   });
   const completedMissions = allMissions.filter((mission) => mission.percentual >= 100.0);
 
-  // Filtra os sub-temas para mostrar apenas aqueles com missões ativas
   const activeSubThemes = Object.entries(subThemes).filter(([, missions]) => {
     if (!Array.isArray(missions)) {
       return false;
@@ -322,7 +314,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
     return missions.some((mission) => mission.percentual < 100.0);
   });
 
-  // Verifica se há um erro na categoria
   const hasError = Object.values(subThemes).some(
     (missions) => !Array.isArray(missions) && typeof missions === "object" && "error" in missions
   );
@@ -392,7 +383,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
   );
 };
 
-// Componente para exibir um sub-tema (ex.: "criar_cards_flow")
 const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: Mission[] }) => {
   if (!Array.isArray(missions) || missions.length === 0) return null;
 
