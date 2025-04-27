@@ -15,7 +15,6 @@ import {
   LessonTopBarHeart,
   WomanSvg,
 } from "~/components/Svgs";
-import womanPng from "../../public/woman.png";
 //import { useBoundStore } from "~/hooks/useBoundStore";
 import { useRouter } from "next/router";
 
@@ -567,19 +566,6 @@ const ProblemWriteInEnglish = ({
           </h1>
 
           <div className="w-full">
-            <div className="flex items-center gap-2 px-2">
-              <Image src={womanPng} alt="" width={92} height={115} />
-              <div className="relative ml-2 w-fit rounded-2xl border-2 border-gray-200 p-4">
-                {question}
-                <div
-                  className="absolute h-4 w-4 rotate-45 border-b-2 border-l-2 border-gray-200 bg-white"
-                  style={{
-                    top: "calc(50% - 8px)",
-                    left: "-10px",
-                  }}
-                ></div>
-              </div>
-            </div>
 
             <div className="flex min-h-[60px] flex-wrap gap-1 border-b-2 border-t-2 border-gray-200 py-1">
               {selectedAnswers.map((i) => {
