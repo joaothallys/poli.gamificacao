@@ -15,6 +15,7 @@ import {
   LessonTopBarHeart,
   WomanSvg,
 } from "~/components/Svgs";
+
 //import { useBoundStore } from "~/hooks/useBoundStore";
 import { useRouter } from "next/router";
 
@@ -566,6 +567,7 @@ const ProblemWriteInEnglish = ({
           </h1>
 
           <div className="w-full">
+            
 
             <div className="flex min-h-[60px] flex-wrap gap-1 border-b-2 border-t-2 border-gray-200 py-1">
               {selectedAnswers.map((i) => {

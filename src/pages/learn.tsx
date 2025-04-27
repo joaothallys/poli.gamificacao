@@ -35,10 +35,20 @@ const levels = [
   { name: "UCE", min: 500001, max: Infinity },
 ];
 
+interface LevelInfo {
+  name: string;
+  progress: number;
+  current: number;
+  next: number;
+  max: number;
+}
+
 // Função para determinar o nível atual e progresso
-const getLevelInfo = (points: number) => {
+const getLevelInfo = (points: number): LevelInfo => {
   const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
-  if (!currentLevel) return { name: "Starter", progress: 0, current: 0, next: 5000 };
+  if (!currentLevel) {
+    return { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
+  }
 
   const nextLevel = levels[levels.indexOf(currentLevel) + 1] || currentLevel;
   const progress = ((points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100;
@@ -47,6 +57,7 @@ const getLevelInfo = (points: number) => {
     progress: Math.min(progress, 100),
     current: points,
     next: nextLevel.max,
+    max: currentLevel.max,
   };
 };
 
@@ -75,21 +86,15 @@ const Learn: NextPage = () => {
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
-    console.log("Raw user_data from localStorage:", userData);
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
-        console.log("Parsed user_data:", parsedData); // Debug: Log parsed data
         setCustomerId(parsedData?.first_account ?? null);
         const logsCount = parsedData?.logs_count ?? 0;
-        console.log("logs_count value:", logsCount); // Debug: Log logs_count
         setShowTerms(logsCount === QTD_LOGS); // Show terms if logs_count matches QTD_LOGS
-        console.log("showTerms set to:", logsCount === QTD_LOGS); // Debug: Log showTerms state
       } catch (error) {
         console.error("Erro ao parsear dados do usuário:", error);
       }
-    } else {
-      console.log("No user_data found in localStorage");
     }
   }, []);
 
@@ -120,13 +125,11 @@ const Learn: NextPage = () => {
   // Função para aceitar os termos e ocultar a mensagem
   const handleAcceptTerms = () => {
     const userData = localStorage.getItem("user_data");
-    console.log("update:", userData);
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
         parsedData.logs_count = QTD_LOGS + 1; // Increment QTD_LOGS to ensure it's different
         localStorage.setItem("user_data", JSON.stringify(parsedData));
-        console.log("Updated user_data in localStorage:", localStorage.getItem("user_data"));
         setShowTerms(false);
       } catch (error) {
         console.error("Erro ao atualizar logs_count:", error);
@@ -141,12 +144,8 @@ const Learn: NextPage = () => {
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
   // Obtém informações do nível atual
-  const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000 };
+  const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
 
-  // Debug: Log the level and image path
-  useEffect(() => {
-    console.log(`Current Level: ${levelInfo.name}, Points: ${totalPoints}, Image: ${levelIcons[levelInfo.name]}`);
-  }, [levelInfo.name, totalPoints]);
 
   return (
     <>
@@ -235,9 +234,7 @@ const Learn: NextPage = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-2 text-center">
-                  {levelInfo.name === "UCE"
-                    ? "Incrível, você ultrapassou 50 mil Policoins e se tornou nível ouro!"
-                    : `Suba de nível ao alcançar ${formatNumber(levelInfo.next)} Policoins!`}
+                  Incrível, você ultrapassou {formatNumber(levelInfo.max)} Policoins e se tornou <strong>nível {levelInfo.name}</strong>!
                 </p>
                 <div className="relative h-4 bg-gray-200 rounded-full w-full">
                   <div
