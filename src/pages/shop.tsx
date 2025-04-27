@@ -4,14 +4,7 @@ import { BottomBar } from "~/components/BottomBar";
 import { LeftBar } from "~/components/LeftBar";
 import Image from "next/image";
 import userService from "~/services/userService";
-
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-  link_img: string;
-  description: string;
-}
+import { Product, TransactionResponse } from "~/types/interfaces";
 
 const Shop: NextPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -23,10 +16,10 @@ const Shop: NextPage = () => {
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const [customerId, setCustomerId] = useState<number | null>(null);
   const [userUuid, setUserUuid] = useState<string | null>(null);
+  const [transactionData, setTransactionData] = useState<TransactionResponse["data"] | null>(null);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
-  // Obter customerId e user_uuid do localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
@@ -101,6 +94,7 @@ const Shop: NextPage = () => {
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
+    setTransactionData(null);
     handleCloseModal();
   };
 
@@ -110,6 +104,10 @@ const Shop: NextPage = () => {
       return;
     }
     const priceNum = parseFloat(product.price);
+    if (isNaN(priceNum)) {
+      setPurchaseMessage("Erro: Preço do produto inválido.");
+      return;
+    }
     if (userBalance < priceNum) {
       setPurchaseMessage("Saldo insuficiente para realizar a compra.");
       return;
@@ -117,7 +115,9 @@ const Shop: NextPage = () => {
     try {
       setPurchaseMessage("Processando compra...");
       const response = await userService.postTransaction(customerId, 0, product.id, token, userUuid);
-      if (response.status === 200 || response.status === 202) {
+      if (response.status === 200 || 202) {
+        const transaction = response.data as TransactionResponse["data"];
+        setTransactionData(transaction);
         setPurchaseMessage("");
         setShowSuccessModal(true);
         await fetchUserBalance();
@@ -125,6 +125,7 @@ const Shop: NextPage = () => {
         setPurchaseMessage(`Falha ao processar a compra. Status: ${response.status}`);
       }
     } catch (error) {
+      console.error("Erro ao processar compra:", error);
       setPurchaseMessage("Falha ao processar compra. Tente novamente.");
     }
   };
@@ -140,7 +141,6 @@ const Shop: NextPage = () => {
     })}`;
   };
 
-  // Agrupar produtos por descrição
   const groupedProducts = products.reduce((acc: Record<string, Product[]>, product) => {
     const desc = product.description || "Outros";
     if (!acc[desc]) {
@@ -155,7 +155,6 @@ const Shop: NextPage = () => {
       <div className="flex w-full">
         <LeftBar selectedTab="Shop" />
         <div className="flex flex-col w-full px-6 py-10 sm:px-10 sm:ml-64 lg:ml-64">
-          {/* Overlay de Carregamento */}
           {isLoading && (
             <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">
@@ -165,7 +164,6 @@ const Shop: NextPage = () => {
             </div>
           )}
 
-          {/* Conteúdo Principal */}
           {!isLoading && (
             <div className="max-w-[1000px] mx-auto w-full mb-8">
               <h2 className="text-3xl font-extrabold text-[#0000C8] mb-4 text-center">
@@ -177,7 +175,6 @@ const Shop: NextPage = () => {
                 </p>
               </div>
 
-              {/* Seções de Produtos */}
               {error ? (
                 <p className="text-red-500 text-center">{error}</p>
               ) : (
@@ -227,7 +224,6 @@ const Shop: NextPage = () => {
         </div>
       </div>
 
-      {/* Modal de Compra */}
       {selectedProduct && !showSuccessModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
@@ -289,7 +285,6 @@ const Shop: NextPage = () => {
         </div>
       )}
 
-      {/* Modal de Sucesso */}
       {showSuccessModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
@@ -316,7 +311,9 @@ const Shop: NextPage = () => {
             </div>
             <h3 className="text-2xl font-bold text-gray-800 mb-3">Compra Solicitada!</h3>
             <p className="text-gray-600 mb-6 text-sm">
-              Sua solicitação foi enviada para análise. Verifique seu e-mail para mais detalhes.
+              {transactionData
+                ? `Sua compra de "${transactionData.product_name}" foi solicitada com sucesso! Status: ${transactionData.transaction_status}. Verifique seu e-mail para mais detalhes.`
+                : "Sua solicitação foi enviada para análise. Verifique seu e-mail para mais detalhes."}
             </p>
             <button
               className="w-full py-3 bg-[#0000C8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors"

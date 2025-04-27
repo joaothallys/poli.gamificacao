@@ -1,29 +1,14 @@
 import { type NextPage } from "next";
 import { useEffect, useState } from "react";
 import userService from "~/services/userService";
+import postUserTermsAcceptance from "~/services/userService";
 import { toast } from "react-toastify";
 import { LeftBar } from "~/components/LeftBar";
 import { BottomBar } from "~/components/BottomBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
 import Bau from "~/components/Bau";
 import BauCheio from "~/components/BauCheio";
-
-// Definição das interfaces para tipagem
-interface Mission {
-  nivel: number;
-  objetivo: number;
-  descricao: string;
-  valor: number;
-  percentual: number;
-}
-
-interface SubTheme {
-  [key: string]: Mission[] | { error: string };
-}
-
-interface MetaProgress {
-  [category: string]: SubTheme;
-}
+import { Mission, SubTheme, MetaProgress, LevelInfo } from "~/types/interfaces";
 
 // Definição dos níveis e seus limites
 const levels = [
@@ -35,15 +20,7 @@ const levels = [
   { name: "UCE", min: 500001, max: Infinity },
 ];
 
-interface LevelInfo {
-  name: string;
-  progress: number;
-  current: number;
-  next: number;
-  max: number;
-}
 
-// Função para determinar o nível atual e progresso
 const getLevelInfo = (points: number): LevelInfo => {
   const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
   if (!currentLevel) {
@@ -86,25 +63,18 @@ const Learn: NextPage = () => {
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
-    console.log("Raw user_data from localStorage:", userData);
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
-        console.log("Parsed user_data:", parsedData); // Debug: Log parsed data
         setCustomerId(parsedData?.first_account ?? null);
         const logsCount = parsedData?.logs_count ?? 0;
-        console.log("logs_count value:", logsCount); // Debug: Log logs_count
-        setShowTerms(logsCount === QTD_LOGS); // Show terms if logs_count matches QTD_LOGS
-        console.log("showTerms set to:", logsCount === QTD_LOGS); // Debug: Log showTerms state
+        setShowTerms(logsCount === QTD_LOGS);
       } catch (error) {
         console.error("Erro ao parsear dados do usuário:", error);
       }
-    } else {
-      console.log("No user_data found in localStorage");
     }
   }, []);
 
-  // Busca os dados de progresso e pontos quando o customerId muda
   useEffect(() => {
     if (!customerId) return;
 
@@ -128,36 +98,45 @@ const Learn: NextPage = () => {
     fetchData();
   }, [customerId, token]);
 
-  // Função para aceitar os termos e ocultar a mensagem
-  const handleAcceptTerms = () => {
+  const handleAcceptTerms = async () => {
     const userData = localStorage.getItem("user_data");
-    console.log("update:", userData);
-    if (userData) {
-      try {
-        const parsedData = JSON.parse(userData);
-        parsedData.logs_count = QTD_LOGS + 1; // Increment QTD_LOGS to ensure it's different
-        localStorage.setItem("user_data", JSON.stringify(parsedData));
-        console.log("Updated user_data in localStorage:", localStorage.getItem("user_data"));
-        setShowTerms(false);
-      } catch (error) {
-        console.error("Erro ao atualizar logs_count:", error);
+    if (!userData) {
+      toast.error("Dados do usuário não encontrados. Faça login novamente.");
+      return;
+    }
+
+    let parsedData;
+    let userUuid;
+    try {
+      parsedData = JSON.parse(userData);
+      userUuid = parsedData?.user_uuid;
+      if (!userUuid) {
+        toast.error("UUID do usuário não encontrado. Faça login novamente.");
+        return;
       }
+    } catch (error) {
+      console.error("Erro ao parsear dados do usuário:", error);
+      toast.error("Erro ao processar dados do usuário");
+      return;
+    }
+
+    try {
+      await userService.postUserTermsAcceptance(userUuid, token);
+      parsedData.logs_count = QTD_LOGS + 1;
+      localStorage.setItem("user_data", JSON.stringify(parsedData));
+      setShowTerms(false);
+    } catch (error) {
+      console.error("Erro ao aceitar termos:", error);
     }
   };
 
-  // Formata valores monetários para o formato brasileiro
   const formatCurrency = (value: number) =>
     value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
-  // Obtém informações do nível atual
   const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
 
-  // Debug: Log the level and image path
-  useEffect(() => {
-    console.log(`Current Level: ${levelInfo.name}, Points: ${totalPoints}, Image: ${levelIcons[levelInfo.name]}`);
-  }, [levelInfo.name, totalPoints]);
 
   return (
     <>
@@ -314,15 +293,12 @@ const Learn: NextPage = () => {
   );
 };
 
-// Função para capitalizar a primeira letra de uma string
 const capitalizeFirstLetter = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
-// Componente para exibir uma categoria (ex.: "Pay", "Flow")
 const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => {
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
-  // Agrupa todas as missões completadas de todos os sub-temas
   const allMissions = Object.entries(subThemes).flatMap(([subTheme, missions]) => {
     if (!Array.isArray(missions)) {
       return [];
@@ -331,7 +307,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
   });
   const completedMissions = allMissions.filter((mission) => mission.percentual >= 100.0);
 
-  // Filtra os sub-temas para mostrar apenas aqueles com missões ativas
   const activeSubThemes = Object.entries(subThemes).filter(([, missions]) => {
     if (!Array.isArray(missions)) {
       return false;
@@ -339,7 +314,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
     return missions.some((mission) => mission.percentual < 100.0);
   });
 
-  // Verifica se há um erro na categoria
   const hasError = Object.values(subThemes).some(
     (missions) => !Array.isArray(missions) && typeof missions === "object" && "error" in missions
   );
@@ -409,7 +383,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
   );
 };
 
-// Componente para exibir um sub-tema (ex.: "criar_cards_flow")
 const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: Mission[] }) => {
   if (!Array.isArray(missions) || missions.length === 0) return null;
 
