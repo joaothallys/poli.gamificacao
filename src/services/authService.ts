@@ -25,7 +25,6 @@ const authService = {
         const userData: UserData = loginResponse.data.detail;
         console.log("userData", userData);
 
-        // Verifica se roles_deprecated_id contém "1" ou "3"
         const roles = userData.roles_deprecated_id.split(",");
         if (roles.includes("1") || roles.includes("3")) {
           console.log("Login bem-sucedido.");
