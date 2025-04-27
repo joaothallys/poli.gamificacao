@@ -21,9 +21,32 @@ const Shop: NextPage = () => {
   const [userBalance, setUserBalance] = useState<number>(0);
   const [purchaseMessage, setPurchaseMessage] = useState<string>("");
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
+  const [customerId, setCustomerId] = useState<number | null>(null);
+  const [userUuid, setUserUuid] = useState<string | null>(null);
 
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "123456";
-  const customerId = 1;
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
+
+  // Obter customerId e user_uuid do localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user_data");
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        setCustomerId(parsedData?.first_account ?? null);
+        setUserUuid(parsedData?.user_uuid ?? null);
+        if (!parsedData?.first_account) {
+          setError("ID do cliente não encontrado. Faça login novamente.");
+        }
+        if (!parsedData?.user_uuid) {
+          setError("UUID do usuário não encontrado. Faça login novamente.");
+        }
+      } catch (error) {
+        setError("Erro ao carregar dados do usuário. Tente novamente.");
+      }
+    } else {
+      setError("Nenhum dado de usuário encontrado. Faça login.");
+    }
+  }, []);
 
   const fetchAllProducts = useCallback(async () => {
     try {
@@ -40,27 +63,31 @@ const Shop: NextPage = () => {
       } while (page <= lastPage);
       setProducts(allProducts);
     } catch (error) {
-      console.error("Error fetching products:", error);
-      setError("Failed to load products. Please try again later.");
+      setError("Falha ao carregar produtos. Tente novamente mais tarde.");
     } finally {
       setIsLoading(false);
     }
   }, [token]);
 
   const fetchUserBalance = useCallback(async () => {
+    if (!customerId) {
+      console.warn("customerId não disponível para buscar saldo");
+      return;
+    }
     try {
       const response = await userService.getCustomerTotalPoints(customerId, token);
       setUserBalance(response.total_points);
     } catch (error) {
-      console.error("Error fetching user balance:", error);
-      setError("Failed to load user balance.");
+      setError("Falha ao carregar saldo do usuário.");
     }
   }, [customerId, token]);
 
   useEffect(() => {
     fetchAllProducts();
-    fetchUserBalance();
-  }, [fetchAllProducts, fetchUserBalance]);
+    if (customerId) {
+      fetchUserBalance();
+    }
+  }, [fetchAllProducts, fetchUserBalance, customerId]);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -78,19 +105,27 @@ const Shop: NextPage = () => {
   };
 
   const handlePurchase = async (product: Product) => {
+    if (!customerId || !userUuid) {
+      setPurchaseMessage("Erro: ID do cliente ou UUID do usuário não disponível.");
+      return;
+    }
     const priceNum = parseFloat(product.price);
-    if (userBalance < priceNum) return;
+    if (userBalance < priceNum) {
+      setPurchaseMessage("Saldo insuficiente para realizar a compra.");
+      return;
+    }
     try {
-      setPurchaseMessage("Processing purchase...");
-      const response = await userService.postTransaction(customerId, 0, product.id, token);
+      setPurchaseMessage("Processando compra...");
+      const response = await userService.postTransaction(customerId, 0, product.id, token, userUuid);
       if (response.status === 200 || response.status === 202) {
         setPurchaseMessage("");
         setShowSuccessModal(true);
-        await fetchUserBalance(); // Refresh balance after purchase
+        await fetchUserBalance();
+      } else {
+        setPurchaseMessage(`Falha ao processar a compra. Status: ${response.status}`);
       }
     } catch (error) {
-      console.error("Error processing purchase:", error);
-      setPurchaseMessage("Failed to process purchase. Please try again.");
+      setPurchaseMessage("Falha ao processar compra. Tente novamente.");
     }
   };
 
@@ -105,7 +140,7 @@ const Shop: NextPage = () => {
     })}`;
   };
 
-  // Group products by description
+  // Agrupar produtos por descrição
   const groupedProducts = products.reduce((acc: Record<string, Product[]>, product) => {
     const desc = product.description || "Outros";
     if (!acc[desc]) {
@@ -120,17 +155,17 @@ const Shop: NextPage = () => {
       <div className="flex w-full">
         <LeftBar selectedTab="Shop" />
         <div className="flex flex-col w-full px-6 py-10 sm:px-10 sm:ml-64 lg:ml-64">
-          {/* Loading Overlay */}
+          {/* Overlay de Carregamento */}
           {isLoading && (
             <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 border-4 border-t-[#0000C8] border-gray-200 rounded-full animate-spin"></div>
-                <p className="mt-4 text-gray-700">Loading products...</p>
+                <p className="mt-4 text-gray-700">Carregando produtos...</p>
               </div>
             </div>
           )}
 
-          {/* Main Content */}
+          {/* Conteúdo Principal */}
           {!isLoading && (
             <div className="max-w-[1000px] mx-auto w-full mb-8">
               <h2 className="text-3xl font-extrabold text-[#0000C8] mb-4 text-center">
@@ -142,7 +177,7 @@ const Shop: NextPage = () => {
                 </p>
               </div>
 
-              {/* Products Sections */}
+              {/* Seções de Produtos */}
               {error ? (
                 <p className="text-red-500 text-center">{error}</p>
               ) : (
@@ -154,23 +189,23 @@ const Shop: NextPage = () => {
                         {products.map((product) => (
                           <div
                             key={product.id}
-                            className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col items-center"
+                            className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between items-center min-h-[400px]"
                           >
                             <div
-                              className="cursor-pointer mb-4"
+                              className="cursor-pointer mb-4 flex items-center justify-center h-48 w-48"
                               onClick={() => handleProductClick(product)}
                             >
                               <Image
                                 src={product.link_img}
                                 alt={product.name}
-                                className="h-48 w-48 object-cover rounded-lg"
+                                className="h-full w-full object-contain rounded-lg"
                                 width={192}
                                 height={192}
                                 loading="lazy"
                                 onError={(e) => (e.currentTarget.src = "/fallback-image.jpg")}
                               />
                             </div>
-                            <h4 className="text-lg font-semibold text-gray-800 text-center mb-2">
+                            <h4 className="text-lg font-semibold text-gray-800 text-center mb-2 line-clamp-2 h-14">
                               {product.name}
                             </h4>
                             <p className="text-[#0000C8] text-xl font-bold mb-4">{formatPrice(product.price)}</p>
@@ -192,7 +227,7 @@ const Shop: NextPage = () => {
         </div>
       </div>
 
-      {/* Purchase Modal */}
+      {/* Modal de Compra */}
       {selectedProduct && !showSuccessModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
@@ -224,7 +259,7 @@ const Shop: NextPage = () => {
                   <p>Saldo restante: <span className="font-semibold">{formatPrice(getRemainingBalance(selectedProduct))}</span></p>
                 </div>
                 {userBalance < parseFloat(selectedProduct.price) ? (
-                  <p className="text-red-500 font-semibold mb-4">Insufficient balance</p>
+                  <p className="text-red-500 font-semibold mb-4">Saldo insuficiente</p>
                 ) : purchaseMessage ? (
                   <p className={`font-semibold mb-4 ${purchaseMessage.includes("Erro") ? "text-red-500" : "text-green-600"}`}>
                     {purchaseMessage}
@@ -234,8 +269,8 @@ const Shop: NextPage = () => {
               <div className="flex gap-4">
                 <button
                   className={`flex-1 py-3 font-semibold rounded-full transition-colors ${userBalance >= parseFloat(selectedProduct.price)
-                      ? "bg-[#0000C8] text-white hover:bg-blue-700"
-                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                    ? "bg-[#0000C8] text-white hover:bg-blue-700"
+                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
                     }`}
                   onClick={() => handlePurchase(selectedProduct)}
                   disabled={userBalance < parseFloat(selectedProduct.price)}
@@ -254,7 +289,7 @@ const Shop: NextPage = () => {
         </div>
       )}
 
-      {/* Success Modal */}
+      {/* Modal de Sucesso */}
       {showSuccessModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"

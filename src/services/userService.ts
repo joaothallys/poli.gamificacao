@@ -34,16 +34,23 @@ const userService = {
     }
   },
 
+  // Função atualizada em src/services/userService.ts
   postTransaction: async (
     customerId: number,
     transactionalType: number,
     productId: number,
-    token: string
+    token: string,
+    userUuid: string
   ) => {
     try {
+      if (!customerId || !productId || !userUuid || !token) {
+        throw new Error("Parâmetros obrigatórios ausentes");
+      }
+
       const url = `${API_URL}/post-transaction`;
       const body = new URLSearchParams({
         customer_id: customerId.toString(),
+        user_uuid: userUuid,
         transactional_type: transactionalType.toString(),
         points: "",
         product_id: productId.toString(),
@@ -58,7 +65,7 @@ const userService = {
       });
       return response.data;
     } catch (error) {
-      throw error;
+      console.error("Erro em postTransaction:", error);
     }
   },
 

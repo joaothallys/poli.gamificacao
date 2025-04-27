@@ -35,10 +35,20 @@ const levels = [
   { name: "UCE", min: 500001, max: Infinity },
 ];
 
+interface LevelInfo {
+  name: string;
+  progress: number;
+  current: number;
+  next: number;
+  max: number;
+}
+
 // Função para determinar o nível atual e progresso
-const getLevelInfo = (points: number) => {
+const getLevelInfo = (points: number): LevelInfo => {
   const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
-  if (!currentLevel) return { name: "Starter", progress: 0, current: 0, next: 5000 };
+  if (!currentLevel) {
+    return { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
+  }
 
   const nextLevel = levels[levels.indexOf(currentLevel) + 1] || currentLevel;
   const progress = ((points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100;
@@ -47,6 +57,7 @@ const getLevelInfo = (points: number) => {
     progress: Math.min(progress, 100),
     current: points,
     next: nextLevel.max,
+    max: currentLevel.max,
   };
 };
 
@@ -141,7 +152,7 @@ const Learn: NextPage = () => {
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
   // Obtém informações do nível atual
-  const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000 };
+  const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
 
   // Debug: Log the level and image path
   useEffect(() => {
@@ -235,9 +246,7 @@ const Learn: NextPage = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-2 text-center">
-                  {levelInfo.name === "UCE"
-                    ? "Incrível, você ultrapassou 50 mil Policoins e se tornou nível ouro!"
-                    : `Suba de nível ao alcançar ${formatNumber(levelInfo.next)} Policoins!`}
+                  Incrível, você ultrapassou {formatNumber(levelInfo.max)} Policoins e se tornou <strong>nível {levelInfo.name}</strong>!
                 </p>
                 <div className="relative h-4 bg-gray-200 rounded-full w-full">
                   <div
