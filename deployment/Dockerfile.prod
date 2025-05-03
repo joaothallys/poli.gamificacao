@@ -2,15 +2,15 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm dotenv-cli
 
-COPY package.json ./
+COPY package.json ./ 
 
 RUN pnpm install
 
 COPY . .
 
-RUN cp ./deployment/.env-production ./.env && pnpm build
+RUN cp ./deployment/.env-production ./.env && dotenv -e .env pnpm build
 
 FROM node:20-alpine AS runner
 
