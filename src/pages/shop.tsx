@@ -20,7 +20,6 @@ const Shop: NextPage = () => {
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
-  // Obter customerId e user_uuid do localStorage
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
@@ -142,7 +141,6 @@ const Shop: NextPage = () => {
     })}`;
   };
 
-  // Agrupar produtos por descrição
   const groupedProducts = products.reduce((acc: Record<string, Product[]>, product) => {
     const desc = product.description || "Outros";
     if (!acc[desc]) {
@@ -157,7 +155,6 @@ const Shop: NextPage = () => {
       <div className="flex w-full">
         <LeftBar selectedTab="Shop" />
         <div className="flex flex-col w-full px-6 py-10 sm:px-10 sm:ml-64 lg:ml-64">
-          {/* Overlay de Carregamento */}
           {isLoading && (
             <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">
@@ -167,7 +164,6 @@ const Shop: NextPage = () => {
             </div>
           )}
 
-          {/* Conteúdo Principal */}
           {!isLoading && (
             <div className="max-w-[1000px] mx-auto w-full mb-8">
               <h2 className="text-3xl font-extrabold text-[#0000C8] mb-4 text-center">
@@ -179,7 +175,6 @@ const Shop: NextPage = () => {
                 </p>
               </div>
 
-              {/* Seções de Produtos */}
               {error ? (
                 <p className="text-red-500 text-center">{error}</p>
               ) : (
@@ -229,7 +224,6 @@ const Shop: NextPage = () => {
         </div>
       </div>
 
-      {/* Modal de Compra */}
       {selectedProduct && !showSuccessModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
@@ -291,7 +285,6 @@ const Shop: NextPage = () => {
         </div>
       )}
 
-      {/* Modal de Sucesso */}
       {showSuccessModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"

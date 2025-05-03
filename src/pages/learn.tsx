@@ -1,16 +1,15 @@
 import { type NextPage } from "next";
 import { useEffect, useState } from "react";
 import userService from "~/services/userService";
-import postUserTermsAcceptance from "~/services/userService";
 import { toast } from "react-toastify";
 import { LeftBar } from "~/components/LeftBar";
 import { BottomBar } from "~/components/BottomBar";
 import { LoginScreen, useLoginScreen } from "~/components/LoginScreen";
 import Bau from "~/components/Bau";
 import BauCheio from "~/components/BauCheio";
+import ProfileFormModal from "~/components/ProfileFormModal";
 import { Mission, SubTheme, MetaProgress, LevelInfo } from "~/types/interfaces";
 
-// Definição dos níveis e seus limites
 const levels = [
   { name: "Starter", min: 0, max: 5000 },
   { name: "Bronze", min: 5001, max: 15000 },
@@ -19,7 +18,6 @@ const levels = [
   { name: "Diamante", min: 100001, max: 500000 },
   { name: "UCE", min: 500001, max: Infinity },
 ];
-
 
 const getLevelInfo = (points: number): LevelInfo => {
   const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
@@ -38,7 +36,6 @@ const getLevelInfo = (points: number): LevelInfo => {
   };
 };
 
-// Mapeamento de níveis para ícones
 const levelIcons: { [key: string]: string } = {
   Starter: "/starter.svg",
   Bronze: "/bronze.svg",
@@ -48,7 +45,6 @@ const levelIcons: { [key: string]: string } = {
   UCE: "/uce.svg",
 };
 
-// Componente principal da página Learn
 const Learn: NextPage = () => {
   const { loginScreenState, setLoginScreenState } = useLoginScreen();
   const [metaProgress, setMetaProgress] = useState<MetaProgress | null>(null);
@@ -57,9 +53,10 @@ const Learn: NextPage = () => {
   const [totalPoints, setTotalPoints] = useState<number | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [userUuid, setUserUuid] = useState<string | null>(null);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
-  const QTD_LOGS = 40;
+  const QTD_LOGS = 1;
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
@@ -67,15 +64,15 @@ const Learn: NextPage = () => {
       try {
         const parsedData = JSON.parse(userData);
         setCustomerId(parsedData?.first_account ?? null);
+        setUserUuid(parsedData?.user_uuid ?? null);
         const logsCount = parsedData?.logs_count ?? 0;
-        setShowTerms(logsCount === QTD_LOGS); // Show terms if logs_count matches QTD_LOGS
+        setShowTerms(logsCount === QTD_LOGS);
       } catch (error) {
         console.error("Erro ao parsear dados do usuário:", error);
       }
     }
   }, []);
 
-  // Busca os dados de progresso e pontos quando o customerId muda
   useEffect(() => {
     if (!customerId) return;
 
@@ -99,48 +96,26 @@ const Learn: NextPage = () => {
     fetchData();
   }, [customerId, token]);
 
-  // Função para aceitar os termos e ocultar a mensagem
-  const handleAcceptTerms = async () => {
+  const handleModalClose = () => {
     const userData = localStorage.getItem("user_data");
-    if (!userData) {
-      toast.error("Dados do usuário não encontrados. Faça login novamente.");
-      return;
-    }
-
-    let parsedData;
-    let userUuid;
-    try {
-      parsedData = JSON.parse(userData);
-      userUuid = parsedData?.user_uuid;
-      if (!userUuid) {
-        toast.error("UUID do usuário não encontrado. Faça login novamente.");
-        return;
+    if (userData) {
+      try {
+        const parsedData = JSON.parse(userData);
+        parsedData.logs_count = QTD_LOGS + 1;
+        localStorage.setItem("user_data", JSON.stringify(parsedData));
+      } catch (error) {
+        console.error("Erro ao atualizar logs_count:", error);
       }
-    } catch (error) {
-      console.error("Erro ao parsear dados do usuário:", error);
-      toast.error("Erro ao processar dados do usuário");
-      return;
     }
-
-    try {
-      await userService.postUserTermsAcceptance(userUuid, token);
-      parsedData.logs_count = QTD_LOGS + 1;
-      localStorage.setItem("user_data", JSON.stringify(parsedData));
-      setShowTerms(false);
-    } catch (error) {
-      console.error("Erro ao aceitar termos:", error);
-    }
+    setShowTerms(false);
   };
 
-  // Formata valores monetários para o formato brasileiro
   const formatCurrency = (value: number) =>
     value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
-  // Obtém informações do nível atual
   const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
-
 
   return (
     <>
@@ -266,46 +241,26 @@ const Learn: NextPage = () => {
         </>
       )}
 
-      {/* Footer with Terms of Use Message */}
+      {/* Footer with Terms of Use Message and Profile Form */}
       <div className="relative">
         <BottomBar selectedTab="Learn" />
-        {showTerms && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 flex justify-between items-center shadow-lg z-50">
-            <div className="flex-1 text-gray-700 text-sm">
-              <span className="font-bold">Termos de uso</span>
-              <br />
-              Para participar do programa, é necessário concordar com os termos de uso e a política de privacidade. Ao aceitar, você declara estar ciente e de acordo com as regras e condições estabelecidas. Saiba mais em nossa{" "}
-              <a
-                href="https://docs.google.com/document/d/1t-ng5n29UiPdDgK8mcXtCWDxidn3gNCWK7Xg9_T6Qps/edit?tab=t.0"
-                className="text-blue-600 underline"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Política do Programa
-              </a>.
-            </div>
-            <button
-              onClick={() => handleAcceptTerms()}
-              className="ml-4 bg-[#0000C8] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Aceitar termos
-            </button>
-          </div>
-        )}
+        <ProfileFormModal
+          isOpen={showTerms}
+          onClose={handleModalClose}
+          userUuid={userUuid}
+          token={token}
+        />
       </div>
     </>
   );
 };
 
-// Função para capitalizar a primeira letra de uma string
 const capitalizeFirstLetter = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
-// Componente para exibir uma categoria (ex.: "Pay", "Flow")
 const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => {
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
-  // Agrupa todas as missões completadas de todos os sub-temas
   const allMissions = Object.entries(subThemes).flatMap(([subTheme, missions]) => {
     if (!Array.isArray(missions)) {
       return [];
@@ -314,7 +269,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
   });
   const completedMissions = allMissions.filter((mission) => mission.percentual >= 100.0);
 
-  // Filtra os sub-temas para mostrar apenas aqueles com missões ativas
   const activeSubThemes = Object.entries(subThemes).filter(([, missions]) => {
     if (!Array.isArray(missions)) {
       return false;
@@ -322,7 +276,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
     return missions.some((mission) => mission.percentual < 100.0);
   });
 
-  // Verifica se há um erro na categoria
   const hasError = Object.values(subThemes).some(
     (missions) => !Array.isArray(missions) && typeof missions === "object" && "error" in missions
   );
@@ -392,7 +345,6 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
   );
 };
 
-// Componente para exibir um sub-tema (ex.: "criar_cards_flow")
 const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: Mission[] }) => {
   if (!Array.isArray(missions) || missions.length === 0) return null;
 

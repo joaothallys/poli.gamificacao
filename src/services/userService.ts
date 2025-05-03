@@ -1,7 +1,45 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosInstance } from "axios";
+import { z } from "zod";
+import validator from "validator";
+import { PostUserParams } from "~/types/interfaces";
 
-// URL fixa da API para teste
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_URL) {
+  throw new Error("Environment variable NEXT_PUBLIC_API_URL is not defined");
+}
+
+const api: AxiosInstance = axios.create({
+  baseURL: API_URL,
+  headers: {
+    accept: "application/json",
+    "Content-Type": "application/json",
+  },
+});
+
+const PostUserResponseSchema = z.unknown();
+
+const handleApiError = (error: unknown, defaultMessage: string): never => {
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError;
+
+    if (axiosError.response?.status === 401) {
+      throw new Error("Unauthorized: Invalid or expired token");
+    }
+
+    if (axiosError.response?.status === 429) {
+      throw new Error("Rate limit exceeded. Please try again later.");
+    }
+
+    const errorMessage =
+      axiosError.response?.data && typeof axiosError.response.data === "object" && "message" in axiosError.response.data
+        ? (axiosError.response.data as { message: string }).message
+        : defaultMessage;
+
+    throw new Error(errorMessage);
+  }
+
+  throw new Error(defaultMessage);
+};
 
 const userService = {
   getMetaProgress: async (customer_id: number, token: string) => {
@@ -19,18 +57,15 @@ const userService = {
     }
   },
 
-  getProducts: async (perPage: number, page: number, token: string) => {
+  getProducts: async (perPage: number, page: number, token: string, transactionTypeId = 0) => {
     try {
-      const url = `${API_URL}/get-products?perPage=${perPage}&page=${page}&transaction_type_id=0`;
-      const response = await axios.get(url, {
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await api.get(`/get-products`, {
+        params: { perPage, page, transaction_type_id: transactionTypeId },
+        headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     } catch (error) {
-      throw error;
+      handleApiError(error, "Failed to fetch products");
     }
   },
 
@@ -42,29 +77,30 @@ const userService = {
     userUuid: string
   ) => {
     try {
-      if (!customerId || !productId || !userUuid || !token) {
-        throw new Error("Parâmetros obrigatórios ausentes");
+      if (!Number.isInteger(customerId) || !Number.isInteger(productId)) {
+        throw new Error("Invalid customer or product ID");
       }
-
-      const url = `${API_URL}/post-transaction`;
+      if (!validator.isUUID(userUuid)) {
+        throw new Error("Invalid user UUID");
+      }
+      if (!token) {
+        throw new Error("Token is required");
+      }
       const body = new URLSearchParams({
         customer_id: customerId.toString(),
         user_uuid: userUuid,
         transactional_type: transactionalType.toString(),
-        points: "",
         product_id: productId.toString(),
       }).toString();
-
-      const response = await axios.post(url, body, {
+      const response = await api.post("/post-transaction", body, {
         headers: {
-          accept: "application/json",
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
       return response.data;
     } catch (error) {
-      console.error("Erro em postTransaction:", error);
+      handleApiError(error, "Failed to post transaction");
     }
   },
 
@@ -83,63 +119,131 @@ const userService = {
     }
   },
 
-  getPointTransactions: async (page: number, perPage: number, token: string, customerId?: number, status?: number) => {
+  getPointTransactions: async (
+    page: number,
+    perPage: number,
+    token: string,
+    customerId?: number,
+    status?: number
+  ) => {
     try {
-      let url = `${API_URL}/get-point-transactions?page=${page}&per_page=${perPage}`;
+      const params = new URLSearchParams({
+        page: page.toString(),
+        per_page: perPage.toString(),
+      });
       if (customerId !== undefined) {
-        url += `&customer_id=${customerId}`;
+        params.append("customer_id", customerId.toString());
       }
       if (status !== undefined) {
-        url += `&transaction_status_id=${status}`;
+        params.append("transaction_status_id", status.toString());
       }
-
-      const response = await axios.get(url, {
-        headers: {
-          accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await api.get(`/get-point-transactions?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       return response.data;
     } catch (error) {
-      throw error;
+      handleApiError(error, "Failed to fetch point transactions");
     }
   },
 
   updatePointTransactionStatus: async (transactionId: number, status: number, token: string) => {
     try {
-      const url = `${API_URL}/update-point-transactions/${transactionId}`;
       const body = new URLSearchParams({
         transaction_status_id: status.toString(),
       }).toString();
-
-      const response = await axios.put(url, body, {
+      const response = await api.put(`/update-point-transactions/${transactionId}`, body, {
         headers: {
-          accept: "application/json",
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
       });
       return response.data;
     } catch (error) {
-      throw error;
+      handleApiError(error, "Failed to update transaction status");
     }
   },
 
   postUserTermsAcceptance: async (userUuid: string, token: string): Promise<void> => {
-    const apiHost = `${API_URL}`;
-    const response = await fetch(`${apiHost}/post-user-terms-acceptance`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: new URLSearchParams({ user_uuid: userUuid }).toString(),
-    });
+    try {
+      if (!validator.isUUID(userUuid)) {
+        throw new Error("Invalid user UUID");
+      }
+      const body = new URLSearchParams({ user_uuid: userUuid }).toString();
+      await api.post("/post-user-terms-acceptance", body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+    } catch (error) {
+      handleApiError(error, "Failed to accept terms");
+    }
+  },
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Falha ao aceitar termos");
+  postUser: async (params: PostUserParams, token: string) => {
+    try {
+      const {
+        address_cep,
+        address_state,
+        user_email,
+        address_street,
+        uuid_user,
+        address_complement,
+        address_number,
+        address_city,
+        address_neighborhood,
+        address_property_type,
+        user_phone,
+        user_name,
+      } = params;
+
+      if (!validator.isUUID(uuid_user)) {
+        throw new Error("Invalid user UUID");
+      }
+      if (!validator.isEmail(user_email)) {
+        throw new Error("Invalid email address");
+      }
+      if (!validator.isMobilePhone(user_phone, "any")) {
+        throw new Error("Invalid phone number");
+      }
+      if (
+        !address_cep ||
+        !address_state ||
+        !address_street ||
+        !address_number ||
+        !address_city ||
+        !address_neighborhood ||
+        !address_property_type ||
+        !user_name
+      ) {
+        throw new Error("Missing required fields");
+      }
+
+      const body = new URLSearchParams({
+        address_cep,
+        address_state,
+        user_email,
+        address_street,
+        uuid_user,
+        address_complement,
+        address_number,
+        address_city,
+        address_neighborhood,
+        address_property_type,
+        user_phone,
+        user_name,
+      }).toString();
+
+      const response = await api.post("/post-user", body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+
+      return PostUserResponseSchema.parse(response.data);
+    } catch (error) {
+      handleApiError(error, "Failed to create user");
     }
   },
 };

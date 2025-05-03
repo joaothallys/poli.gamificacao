@@ -48,3 +48,18 @@ export interface Product {
     next: number;
     max: number;
   }
+
+  export interface PostUserParams {
+    address_cep: string;
+    address_state: string;
+    user_email: string;
+    address_street: string;
+    uuid_user: string;
+    address_complement: string;
+    address_number: string;
+    address_city: string;
+    address_neighborhood: string;
+    address_property_type: string;
+    user_phone: string;
+    user_name: string;
+  }
