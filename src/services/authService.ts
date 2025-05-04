@@ -23,11 +23,9 @@ const authService = {
 
       if (loginResponse.status === 200 || loginResponse.status === 204) {
         const userData: UserData = loginResponse.data.detail;
-        console.log("userData", userData);
 
         const roles = userData.roles_deprecated_id.split(",");
         if (roles.includes("1") || roles.includes("3")) {
-          console.log("Login bem-sucedido.");
           localStorage.setItem("user_data", JSON.stringify(userData));
           
           return { authorized: true, message: "Usuário autorizado." };

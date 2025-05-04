@@ -4,9 +4,9 @@ import validator from "validator";
 import { PostUserParams } from "~/types/interfaces";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_URL) {
-  throw new Error("Environment variable NEXT_PUBLIC_API_URL is not defined");
-}
+// if (!API_URL) {
+//   throw new Error("Environment variable NEXT_PUBLIC_API_URL is not defined");
+// }
 
 const api: AxiosInstance = axios.create({
   baseURL: API_URL,
