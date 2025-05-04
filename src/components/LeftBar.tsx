@@ -13,6 +13,8 @@ import TransacoesGraySvg from "../../public/transacoes-gray.svg";
 import TransacoesBlueSvg from "../../public/transacoes-blue.svg";
 import LogoutSvg from "../../public/logout.svg";
 
+const APP_VERSION = "1.0.0";
+
 const bottomBarItems = [
   {
     name: "Home",
@@ -113,6 +115,9 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
             <span className="hidden lg:inline">Sair</span>
           </button>
         </ul>
+        <p className="mt-auto text-xs text-gray-500 lg:text-sm">
+          Versão: {APP_VERSION}
+        </p>
       </nav>
       <LoginScreen
         loginScreenState={loginScreenState}
