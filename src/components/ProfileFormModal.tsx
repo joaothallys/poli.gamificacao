@@ -182,8 +182,8 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
                 <option value="" disabled>
                   Selecione o tipo
                 </option>
-                <option value="Casa">Casa</option>
-                <option value="Apartamento">Apartamento</option>
+                <option value="Comercial">Comercial</option>
+                <option value="Residencial">Residencial</option>
               </select>
             </div>
           </div>

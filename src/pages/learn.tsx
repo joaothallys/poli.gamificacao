@@ -56,7 +56,6 @@ const Learn: NextPage = () => {
   const [userUuid, setUserUuid] = useState<string | null>(null);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
-  const QTD_LOGS = 1;
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
@@ -65,8 +64,8 @@ const Learn: NextPage = () => {
         const parsedData = JSON.parse(userData);
         setCustomerId(parsedData?.first_account ?? null);
         setUserUuid(parsedData?.user_uuid ?? null);
-        const logsCount = parsedData?.logs_count ?? 0;
-        setShowTerms(logsCount === QTD_LOGS);
+        const acceptTerms = parsedData?.accept_terms ?? false;
+        setShowTerms(acceptTerms === false); // Modal aparece se termos não foram aceitos
       } catch (error) {
         console.error("Erro ao parsear dados do usuário:", error);
       }
@@ -96,15 +95,15 @@ const Learn: NextPage = () => {
     fetchData();
   }, [customerId, token]);
 
-  const handleModalClose = () => {
+  const handleAcceptTerms = () => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
       try {
         const parsedData = JSON.parse(userData);
-        parsedData.logs_count = QTD_LOGS + 1;
+        parsedData.accept_terms = true;
         localStorage.setItem("user_data", JSON.stringify(parsedData));
       } catch (error) {
-        console.error("Erro ao atualizar logs_count:", error);
+        console.error("Erro ao atualizar accept_terms:", error);
       }
     }
     setShowTerms(false);
@@ -246,7 +245,7 @@ const Learn: NextPage = () => {
         <BottomBar selectedTab="Learn" />
         <ProfileFormModal
           isOpen={showTerms}
-          onClose={handleModalClose}
+          onClose={handleAcceptTerms}
           userUuid={userUuid}
           token={token}
         />
@@ -366,7 +365,7 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-gray-700 font-medium">
-          Nível {currentMission.nivel}: {capitalizeFirstLetter(currentMission.descricao)}
+          N19pxNível {currentMission.nivel}: {capitalizeFirstLetter(currentMission.descricao)}
         </p>
         <div className="relative h-4 bg-gray-200 rounded-full w-full">
           <div
