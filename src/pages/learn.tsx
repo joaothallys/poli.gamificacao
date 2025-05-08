@@ -365,7 +365,7 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-gray-700 font-medium">
-          N19pxNível {currentMission.nivel}: {capitalizeFirstLetter(currentMission.descricao)}
+          Nível {currentMission.nivel}: {capitalizeFirstLetter(currentMission.descricao)}
         </p>
         <div className="relative h-4 bg-gray-200 rounded-full w-full">
           <div
