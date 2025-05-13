@@ -11,7 +11,7 @@ import ProfileFormModal from "~/components/ProfileFormModal";
 import { Mission, SubTheme, MetaProgress, LevelInfo } from "~/types/interfaces";
 
 const levels = [
-  { name: "Starter", min: 0, max: 5000 },
+  { name: "inicio", min: 0, max: 5000 },
   { name: "Bronze", min: 5001, max: 15000 },
   { name: "Prata", min: 15001, max: 50000 },
   { name: "Ouro", min: 50001, max: 100000 },
@@ -22,7 +22,7 @@ const levels = [
 const getLevelInfo = (points: number): LevelInfo => {
   const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
   if (!currentLevel) {
-    return { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
+    return { name: "inicio", progress: 0, current: 0, next: 5000, max: 5000 };
   }
 
   const nextLevel = levels[levels.indexOf(currentLevel) + 1] || currentLevel;
@@ -37,7 +37,7 @@ const getLevelInfo = (points: number): LevelInfo => {
 };
 
 const levelIcons: { [key: string]: string } = {
-  Starter: "/starter.svg",
+  Starter: "/inicio.svg",
   Bronze: "/bronze.svg",
   Prata: "/prata.svg",
   Ouro: "/ouro.svg",
@@ -192,11 +192,11 @@ const Learn: NextPage = () => {
                   >
                     <img
                       key={levelInfo.name}
-                      src={levelIcons[levelInfo.name] || "/starter.svg"}
+                      src={levelIcons[levelInfo.name] || "/inicio.svg"}
                       alt={`${levelInfo.name} Level Icon`}
                       style={{ width: "78px", height: "51.68278121948242px" }}
                       onError={(e) => {
-                        console.error(`Failed to load image for level ${levelInfo.name}: ${levelIcons[levelInfo.name] || "/starter.svg"}`);
+                        console.error(`Failed to load image for level ${levelInfo.name}: ${levelIcons[levelInfo.name] || "/inicio.svg"}`);
                         e.currentTarget.src = "/fallback.svg";
                       }}
                     />
