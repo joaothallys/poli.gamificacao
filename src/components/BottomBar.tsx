@@ -6,12 +6,12 @@ type BottomBarItem = {
   icon: JSX.Element;
 };
 
-export type Tab = "Home" | "Loja" | "Shop" | "Learn" | "Profile" | "Leaderboards";
+export type Tab = "Home" | "Loja" | "Shop" | "Home" | "Profile" | "Leaderboards";
 
 const bottomBarItems: BottomBarItem[] = [
   {
     name: "Home",
-    href: "/learn",
+    href: "/home",
     icon: (
       <svg
         width="32"

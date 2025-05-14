@@ -107,7 +107,7 @@ export const LanguageCarousel = () => {
               <Link
                 key={language.code}
                 className="flex items-center gap-2"
-                href={"/learn"}
+                href={"/home"}
               >
                 <Flag language={language} width={40} />
                 <span className="text-sm font-bold uppercase">

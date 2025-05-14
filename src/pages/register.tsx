@@ -23,7 +23,7 @@ const Register: NextPage = () => {
           {languages.map((language) => (
             <Link
               key={language.name}
-              href="/learn"
+              href="/home"
               className={
                 "flex cursor-pointer flex-col items-center gap-4 rounded-2xl border-2 border-b-4 border-gray-400 px-5 py-8 text-xl font-bold hover:bg-gray-300 hover:bg-opacity-20"
               }
