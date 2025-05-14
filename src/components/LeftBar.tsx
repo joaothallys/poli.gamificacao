@@ -18,7 +18,7 @@ const APP_VERSION = "1.0.1";
 const bottomBarItems = [
   {
     name: "Home",
-    href: "/learn",
+    href: "/home", // não mudar
     icon: (isActive: boolean) => (
       <Image
         src={isActive ? HomeBlueSvg : HomeGraySvg}
@@ -83,7 +83,7 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
       <nav className="fixed bottom-0 left-0 top-0 hidden flex-col gap-5 border-r-2 border-[#e5e5e5] bg-white p-3 md:flex lg:w-64 lg:p-5">
         <div className="flex flex-col items-start mb-5 mt-5">
           <Image src={LogoSvg} alt="Logo" width={70} height={70} className="mb-2" />
-          <Link href="/learn" className="mt-4 text-3xl font-bold text-[#0000CB] lg:block">
+          <Link href="/home" className="mt-4 text-3xl font-bold text-[#0000CB] lg:block">
             Gamificação
           </Link>
         </div>

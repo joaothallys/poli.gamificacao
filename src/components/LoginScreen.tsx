@@ -82,7 +82,7 @@ export const LoginScreen = ({
     // const name =
     //   nameInputRef.current?.value.trim() || Math.random().toString().slice(2);
     //const username = name.replace(/ +/g, "-");
-    void router.push("/learn");
+    void router.push("/home");
   };
 
   return (
