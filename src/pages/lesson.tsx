@@ -239,7 +239,7 @@ const ProgressBar = ({
   return (
     <header className="flex items-center gap-4">
       {correctAnswerCount === 0 ? (
-        <Link href="/learn" className="text-gray-400">
+        <Link href="/home" className="text-gray-400">
           <CloseSvg />
           <span className="sr-only">Exit lesson</span>
         </Link>
@@ -321,7 +321,7 @@ const QuitMessage = ({
         <div className="flex grow flex-col items-center justify-center gap-4 sm:flex-row-reverse">
           <Link
             className="flex w-full items-center justify-center rounded-2xl border-b-4 border-blue-500 bg-blue-400 py-3 font-bold uppercase text-white transition hover:brightness-105 sm:w-48"
-            href="/learn"
+            href="/home"
           >
             Quit
           </Link>
@@ -702,7 +702,7 @@ const LessonComplete = ({
             className={
               "flex w-full items-center justify-center rounded-2xl border-b-4 border-green-600 bg-green-500 p-3 font-bold uppercase text-white transition hover:brightness-105 sm:min-w-[150px] sm:max-w-fit"
             }
-            href="/learn"
+            href="/home"
             onClick={() => {
               increaseXp(correctAnswerCount);
               addToday();
@@ -850,7 +850,7 @@ const LessonFastForwardStart = ({
       <section className="border-gray-200 sm:border-t-2 sm:p-10">
         <div className="mx-auto flex max-w-5xl flex-col-reverse items-center gap-5 sm:flex-row sm:justify-between">
           <Link
-            href="/learn"
+            href="/home"
             className="font-bold uppercase text-blue-400 transition hover:brightness-110"
           >
             Maybe later
@@ -899,7 +899,7 @@ const LessonFastForwardEndFail = ({
           </button>
           <Link
             className="flex w-full items-center justify-center rounded-2xl border-b-4 border-green-600 bg-green-500 p-3 font-bold uppercase text-white transition hover:brightness-105 sm:min-w-[150px] sm:max-w-fit"
-            href="/learn"
+            href="/home"
           >
             Continue
           </Link>
@@ -945,7 +945,7 @@ const LessonFastForwardEndPass = ({
           </button>
           <Link
             className="flex w-full items-center justify-center rounded-2xl border-b-4 border-green-600 bg-green-500 p-3 font-bold uppercase text-white transition hover:brightness-105 sm:min-w-[150px] sm:max-w-fit"
-            href="/learn"
+            href="/home"
             //onClick={() => jumpToUnit(unitNumber)}
           >
             Continue

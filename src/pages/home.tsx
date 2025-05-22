@@ -54,6 +54,7 @@ const Learn: NextPage = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [userUuid, setUserUuid] = useState<string | null>(null);
+  const [currentPoints, setCurrentPoints] = useState<number | null>(null);
 
   const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
@@ -84,6 +85,7 @@ const Learn: NextPage = () => {
         ]);
         setMetaProgress(progressData);
         setTotalPoints(pointsData.total_points);
+        setCurrentPoints(pointsData.current_points);
       } catch (error) {
         console.error("Erro ao carregar dados:", error);
         toast.error("Erro ao carregar dados");
@@ -173,7 +175,7 @@ const Learn: NextPage = () => {
                   )}
                 </div>
                 <div className="text-[#0000C8] font-bold text-2xl text-right min-w-[100px]">
-                  {totalPoints !== null ? formatCurrency(totalPoints) : "Carregando..."}
+                  {currentPoints !== null ? formatCurrency(currentPoints) : "Carregando..."}
                 </div>
               </div>
 

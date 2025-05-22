@@ -20,7 +20,7 @@ const Login = () => {
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
     if (userData) {
-      router.push("/learn").catch(console.error);
+      router.push("/home").catch(console.error);
     }
   }, [router]);
 
@@ -29,7 +29,7 @@ const Login = () => {
     try {
       const response = await authService.login(email, password);
       if (response.authorized) {
-        await router.push("/learn");
+        await router.push("/home");
       } else {
         setError("Email/Senha inválidos");
       }
