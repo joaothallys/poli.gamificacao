@@ -152,9 +152,9 @@ const Shop: NextPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="flex w-full">
+      <div className="flex w-full flex-col md:flex-row">
         <LeftBar selectedTab="Shop" />
-        <div className="flex flex-col w-full px-6 py-10 sm:px-10 sm:ml-64 lg:ml-64">
+        <div className="flex flex-col w-full px-2 py-6 sm:px-4 md:px-10 md:py-10 md:ml-64 lg:ml-64">
           {isLoading && (
             <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
               <div className="flex flex-col items-center">
@@ -182,14 +182,14 @@ const Shop: NextPage = () => {
                   {Object.entries(groupedProducts).map(([description, products]) => (
                     <div key={description}>
                       <h3 className="text-2xl font-bold text-gray-800 mb-6 capitalize">{description}</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-[1000px] mx-auto w-full">
+                      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-full md:max-w-[1000px] mx-auto w-full">
                         {products.map((product) => (
                           <div
                             key={product.id}
-                            className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between items-center min-h-[400px]"
+                            className="bg-white p-3 sm:p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between items-center min-h-[320px] sm:min-h-[400px]"
                           >
                             <div
-                              className="cursor-pointer mb-4 flex items-center justify-center h-48 w-48"
+                              className="cursor-pointer mb-4 flex items-center justify-center h-36 w-36 sm:h-48 sm:w-48"
                               onClick={() => handleProductClick(product)}
                             >
                               <Image
