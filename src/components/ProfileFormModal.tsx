@@ -273,7 +273,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
             <br />
             Para participar do programa, é necessário concordar com os termos de uso e a política de privacidade. Ao aceitar, você declara estar ciente e de acordo com as regras e condições estabelecidas. Saiba mais em nossa{" "}
             <a
-              href="https://docs.google.com/document/d/1t-ng5n29UiPdDgK8mcXtCWDxidn3gNCWK7Xg9_T6Qps/edit?tab=t.0"
+              href="https://poli.digital/policoins/termos-e-condicoes/"
               className="text-blue-600 underline"
               target="_blank"
               rel="noopener noreferrer"

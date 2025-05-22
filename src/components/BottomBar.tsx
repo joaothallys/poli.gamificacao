@@ -119,7 +119,7 @@ export const BottomBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
                 href={item.href}
                 className={
                   item.name === selectedTab
-                    ? "rounded-xl border-2 border-[#84d8ff] bg-[#ddf4ff] px-2 py-1"
+                    ? "rounded-xl px-2 py-1"
                     : "px-2 py-1"
                 }
               >

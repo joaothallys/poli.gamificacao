@@ -95,11 +95,10 @@ export const LeftBar = ({ selectedTab }: { selectedTab: Tab | null }) => {
               <li key={item.href} className="flex flex-1">
                 <Link
                   href={item.href}
-                  className={`flex grow items-center gap-3 rounded-xl px-2 py-1 text-sm font-bold uppercase ${
-                    item.name === selectedTab
-                      ? "border-2 border-[#84d8ff] bg-[#ddf4ff] text-blue-400"
+                  className={`flex grow items-center gap-3 rounded-xl px-2 py-1 text-sm font-bold uppercase ${item.name === selectedTab
+                      ? "text-[#9CA3AF]"
                       : "text-gray-400 hover:bg-gray-100"
-                  }`}
+                    }`}
                 >
                   {item.icon(isActive)}
                   <span className="sr-only lg:not-sr-only">{item.name}</span>
