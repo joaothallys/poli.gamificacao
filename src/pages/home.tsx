@@ -118,7 +118,7 @@ const Learn: NextPage = () => {
 
   return (
     <>
-      <LeftBar selectedTab="Learn" />
+      <LeftBar selectedTab="Home" />
 
       {/* Overlay de carregamento */}
       {isLoading && (
@@ -242,7 +242,7 @@ const Learn: NextPage = () => {
 
       {/* Footer with Terms of Use Message and Profile Form */}
       <div className="relative">
-        <BottomBar selectedTab="Learn" />
+        <BottomBar selectedTab="Home" />
         <ProfileFormModal
           isOpen={showTerms}
           onClose={handleAcceptTerms}
