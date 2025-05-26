@@ -69,7 +69,7 @@ const Shop: NextPage = () => {
     }
     try {
       const response = await userService.getCustomerTotalPoints(customerId, token);
-      setUserBalance(response.total_points);
+      setUserBalance(response.current_points);
     } catch (error) {
       setError("Falha ao carregar saldo do usuário.");
     }

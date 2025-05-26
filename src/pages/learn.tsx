@@ -361,7 +361,6 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
         <h3 className="text-md font-medium text-gray-600">
           {capitalizeFirstLetter(subTheme.replace(/_/g, " "))}
         </h3>
-        <span className="text-[#0000C8] text-sm font-bold cursor-pointer">Comece agora</span>
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-gray-700 font-medium">
