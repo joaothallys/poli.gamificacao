@@ -26,6 +26,7 @@ export interface Product {
   }
   
   export interface Mission {
+    tooltip: any;
     nivel: number;
     objetivo: number;
     descricao: string;
