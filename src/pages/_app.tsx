@@ -16,7 +16,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <>
       <Head>
-        <title>Poli Gamificação</title>
+        <title>Poli - Gamificação</title>
         <meta
           name="description"
           content=""
