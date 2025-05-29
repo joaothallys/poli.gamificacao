@@ -270,8 +270,8 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
   });
   const completedMissions = allMissions.filter((mission) => mission.percentual >= 100.0);
 
-  const activeSubThemes = Object.entries(subThemes).filter(([, missions]) => {
-    if (!Array.isArray(missions)) {
+  const activeSubThemes = Object.entries(subThemes).filter(([subTheme, missions]) => {
+    if (!Array.isArray(missions) || subTheme === "click_here") {
       return false;
     }
     return missions.some((mission) => mission.percentual < 100.0);
@@ -296,7 +296,11 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
           <div className="flex flex-col gap-6">
             {activeSubThemes.length > 0 ? (
               activeSubThemes.map(([subTheme, missions]) => (
-                <SubThemeSection key={subTheme} subTheme={subTheme} missions={missions as Mission[]} />
+                <SubThemeSection
+                  key={subTheme}
+                  subTheme={subTheme}
+                  missions={missions as Mission[]}
+                />
               ))
             ) : (
               <p className="text-gray-600 text-sm">Nenhuma missão ativa no momento.</p>
@@ -320,7 +324,8 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
                         {capitalizeFirstLetter(mission.subTheme.replace(/_/g, " "))}
                       </p>
                       <p className="text-gray-600 text-sm">
-                        Nível {mission.nivel}: {capitalizeFirstLetter(mission.descricao)} • (Ganhe {formatNumber(mission.objetivo)} Policoins)
+                        Nível {mission.nivel}: {capitalizeFirstLetter(mission.descricao)} • (Ganhe{" "}
+                        {formatNumber(mission.objetivo)} Policoins)
                       </p>
                       <div className="relative h-4 bg-gray-200 rounded-full w-full">
                         <div
@@ -347,6 +352,8 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
 };
 
 const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: Mission[] }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
   if (!Array.isArray(missions) || missions.length === 0) return null;
 
   const activeMissions = missions.filter((mission) => mission.percentual < 100);
@@ -355,15 +362,41 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
   const currentMission = activeMissions[0];
   if (!currentMission) return null;
 
-  const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
+  const tooltip = missions.find((item) => "tooltip" in item)?.tooltip || "";
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex justify-between items-center">
-        <h3 className="text-md font-medium text-gray-600">
-          {capitalizeFirstLetter(subTheme.replace(/_/g, " "))}
-        </h3>
-        
+        <div className="relative flex items-center">
+          <h3 className="text-md font-medium text-gray-600">
+            {capitalizeFirstLetter(subTheme.replace(/_/g, " "))}
+          </h3>
+          {tooltip && (
+            <>
+              <div
+                className="ml-2 w-5 h-5 bg-[#E6E6FA] rounded-full flex items-center justify-center text-[#4B0082] text-xs cursor-pointer"
+                onMouseEnter={() => setShowTooltip(true)}
+                onMouseLeave={() => setShowTooltip(false)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setShowTooltip(true);
+                  }
+                }}
+                role="button"
+                aria-label={`Mais informações sobre ${subTheme}`}
+                tabIndex={0}
+              >
+                i
+              </div>
+              {showTooltip && (
+                <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10 max-w-[200px]">
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-[#F5F5F5] border-b-8 border-b-transparent" />
+                  <span className="whitespace-nowrap">{tooltip}</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-gray-700 font-medium">
@@ -389,6 +422,7 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
   );
 };
 
-const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
+const formatNumber = (value: number) =>
+  value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
 export default Home;
