@@ -13,7 +13,7 @@ import TransacoesGraySvg from "../../public/transacoes-gray.svg";
 import TransacoesBlueSvg from "../../public/transacoes-blue.svg";
 import LogoutSvg from "../../public/logout.svg";
 
-const APP_VERSION = "1.0.3";
+const APP_VERSION = "1.0.4";
 
 const bottomBarItems = [
   {
