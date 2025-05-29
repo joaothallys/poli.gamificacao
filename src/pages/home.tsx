@@ -11,28 +11,28 @@ import ProfileFormModal from "~/components/ProfileFormModal";
 import { Mission, SubTheme, MetaProgress, LevelInfo } from "~/types/interfaces";
 
 const levels = [
-  { name: "inicio", min: 0, max: 5000 },
-  { name: "Bronze", min: 5001, max: 15000 },
-  { name: "Prata", min: 15001, max: 50000 },
-  { name: "Ouro", min: 50001, max: 100000 },
-  { name: "Diamante", min: 100001, max: 500000 },
-  { name: "UCE", min: 500001, max: Infinity },
-];
+  { name: "Starter", min: 0, max: 4999 },
+  { name: "Bronze", min: 5000, max: 14999 },
+  { name: "Prata", min: 15000, max: 49999 },
+  { name: "Ouro", min: 50000, max: 99999 },
+  { name: "Diamante", min: 100000, max: 499999 },
+  { name: "UCE", min: 500000, max: Infinity },
+] as const;
 
 const getLevelInfo = (points: number): LevelInfo => {
-  const currentLevel = levels.find((level) => points >= level.min && points <= level.max);
-  if (!currentLevel) {
-    return { name: "inicio", progress: 0, current: 0, next: 5000, max: 5000 };
-  }
-
-  const nextLevel = levels[levels.indexOf(currentLevel) + 1] || currentLevel;
-  const progress = ((points - currentLevel.min) / (currentLevel.max - currentLevel.min)) * 100;
+  const currentLevel = levels.find((level) => points >= level.min && points <= level.max) || levels[0];
+  const currentLevelIndex = levels.findIndex((level) => level === currentLevel);
+  const nextLevel = levels[currentLevelIndex + 1];
+  const progress = nextLevel
+    ? ((points - currentLevel.min) / (nextLevel.min - currentLevel.min)) * 100
+    : 100;
   return {
     name: currentLevel.name,
     progress: Math.min(progress, 100),
     current: points,
-    next: nextLevel.max,
+    next: nextLevel ? nextLevel.min : currentLevel.max,
     max: currentLevel.max,
+    min: currentLevel.min, // <-- adicione esta linha
   };
 };
 
@@ -116,7 +116,9 @@ const Home: NextPage = () => {
 
   const formatNumber = (value: number) => value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
-  const levelInfo = totalPoints !== null ? getLevelInfo(totalPoints) : { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000 };
+  const levelInfo = totalPoints !== null
+    ? getLevelInfo(totalPoints)
+    : { name: "Starter", progress: 0, current: 0, next: 5000, max: 5000, min: 0 };
 
   return (
     <>
@@ -205,7 +207,7 @@ const Home: NextPage = () => {
                   </div>
                 </div>
                 <p className="text-gray-600 text-sm mb-2 text-center">
-                  Incrível, você ultrapassou {formatNumber(levelInfo.max)} Policoins e se tornou <strong>nível {levelInfo.name}</strong>!
+                  Incrível, você ultrapassou {formatNumber(levelInfo.min)} Policoins e se tornou <strong>nível {levelInfo.name}</strong>!
                 </p>
                 <div className="relative h-4 bg-gray-200 rounded-full w-full">
                   <div
