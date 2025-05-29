@@ -48,6 +48,7 @@ export interface LevelInfo {
   current: number;
   next: number;
   max: number;
+  min: number;
 }
 
 export interface PostUserParams {
