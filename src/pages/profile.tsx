@@ -167,14 +167,10 @@ const Profile: NextPage = () => {
 
       {loading && (
         <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
-          <svg className="animate-spin h-12 w-12 text-[#0000C8]" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-            />
-          </svg>
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 border-4 border-t-[#0000C8] border-gray-200 rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-700">Carregando perfil...</p>
+          </div>
         </div>
       )}
 
