@@ -12,6 +12,8 @@ import HomeBlueSvg from "../../public/home-blue.svg";
 import TransacoesGraySvg from "../../public/transacoes-gray.svg";
 import TransacoesBlueSvg from "../../public/transacoes-blue.svg";
 import LogoutSvg from "../../public/logout.svg";
+import ProfileGraySvg from "../../public/profile-gray.svg";
+import ProfileBlueSvg from "../../public/person-icon.svg";
 
 const APP_VERSION = "1.0.4";
 
@@ -35,6 +37,18 @@ const bottomBarItems = [
       <Image
         src={isActive ? ShopBlueSvg : ShopGraySvg}
         alt="Loja"
+        width={50}
+        height={50}
+      />
+    ),
+  },
+  {
+    name: "Perfil",
+    href: "/profile",
+    icon: (isActive: boolean) => (
+      <Image
+        src={isActive ? ProfileBlueSvg : ProfileGraySvg}
+        alt="Perfil"
         width={50}
         height={50}
       />

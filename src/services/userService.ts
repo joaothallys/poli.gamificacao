@@ -246,6 +246,33 @@ const userService = {
       handleApiError(error, "Failed to create user");
     }
   },
+
+  getUsers: async (
+    user_uuid: string,
+    perPage: number,
+    page: number,
+    token: string
+  ) => {
+    try {
+      if (!validator.isUUID(user_uuid)) {
+        throw new Error("Invalid user UUID");
+      }
+      const params = new URLSearchParams({
+        user_uuid,
+      }).toString();
+
+      const response = await api.get(`/get-users?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          accept: "application/json",
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      handleApiError(error, "Failed to fetch users");
+    }
+  },
 };
 
 export default userService;
