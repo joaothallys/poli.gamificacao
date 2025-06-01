@@ -45,7 +45,7 @@ const levelIcons: { [key: string]: string } = {
   UCE: "/uce.svg",
 };
 
-const Learn: NextPage = () => {
+const Home: NextPage = () => {
   const { loginScreenState, setLoginScreenState } = useLoginScreen();
   const [metaProgress, setMetaProgress] = useState<MetaProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -427,4 +427,4 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
 const formatNumber = (value: number) =>
   value.toLocaleString("pt-BR", { minimumFractionDigits: 0 });
 
-export default Learn;
+export default Home;

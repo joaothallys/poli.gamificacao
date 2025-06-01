@@ -1,206 +1,406 @@
 import type { NextPage } from "next";
 import { BottomBar } from "~/components/BottomBar";
 import { LeftBar } from "~/components/LeftBar";
-import {
-  BronzeLeagueSvg,
-  EditPencilSvg,
-  //EmptyFireSvg,
-  //FireSvg,
-  LightningProgressSvg,
-  EmptyMedalSvg,
-  ProfileFriendsSvg,
-  ProfileTimeJoinedSvg,
-  SettingsGearSvg,
-} from "~/components/Svgs";
-import Link from "next/link";
-//import { Flag } from "~/components/Flag";
-import { useEffect } from "react";
-import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
+import userService from "~/services/userService";
+import InputMask from "react-input-mask";
 
 const Profile: NextPage = () => {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [editingAccount, setEditingAccount] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
+
+  const [accountData, setAccountData] = useState<any>({});
+  const [addressData, setAddressData] = useState<any>({});
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+
+  const [popup, setPopup] = useState<{ type: "error" | "success"; message: string } | null>(null);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+    const uuid = userData.user_uuid;
+    const token = "123456";
+
+    if (!uuid || !token) return;
+
+    userService
+      .getUsers(uuid, 1, 1, token)
+      .then((res: any) => {
+        const data = res.data[0];
+        setUser(data);
+        setAccountData({
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          role: data.role,
+          created_at: data.created_at,
+        });
+        setAddressData({ ...data.address });
+      })
+      .catch(() => setPopup({ type: "error", message: "Erro ao carregar dados do perfil." }))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Checa se todos os campos obrigatórios estão preenchidos (exceto status e created_at)
+  const allFieldsFilled = (obj: any) =>
+    Object.entries(obj)
+      .filter(([key]) => key !== "status" && key !== "created_at")
+      .every(([, val]) => val !== undefined && val !== "");
+
+  // Checa se todos os campos obrigatórios do endereço estão preenchidos
+  const allAddressFieldsFilled = (obj: any) =>
+    ["street", "number", "complement", "property_type", "cep", "neighborhood", "city", "state"].every(
+      (key) => obj[key] !== undefined && obj[key] !== ""
+    );
+
+  // Salvar dados da conta (edição)
+  const handleSaveAccount = async () => {
+    if (!allFieldsFilled(accountData) || !allAddressFieldsFilled(addressData)) return;
+    setSavingAccount(true);
+    try {
+      const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+      const uuid = userData.user_uuid;
+      const token = "123456";
+      await userService.putUser(
+        uuid,
+        {
+          user_name: accountData.name,
+          user_email: accountData.email,
+          user_phone: accountData.phone,
+          user_role: accountData.role,
+          address_cep: addressData.cep,
+          address_state: addressData.state,
+          address_street: addressData.street,
+          address_complement: addressData.complement,
+          address_number: addressData.number,
+          address_city: addressData.city,
+          address_neighborhood: addressData.neighborhood,
+          address_property_type: addressData.property_type,
+        },
+        token
+      );
+      setUser((prev: any) => ({
+        ...prev,
+        ...accountData,
+        address: { ...addressData },
+      }));
+      setEditingAccount(false);
+      setPopup({ type: "success", message: "Dados da conta salvos com sucesso!" });
+    } catch (err) {
+      setPopup({ type: "error", message: "Erro ao salvar dados da conta." });
+    } finally {
+      setSavingAccount(false);
+    }
+  };
+
+  // Salvar dados do endereço (edição)
+  const handleSaveAddress = async () => {
+    if (!allAddressFieldsFilled(addressData) || !allFieldsFilled(accountData)) return;
+    setSavingAddress(true);
+    try {
+      const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+      const uuid = userData.user_uuid;
+      const token = "123456";
+      await userService.putUser(
+        uuid,
+        {
+          user_name: accountData.name,
+          user_email: accountData.email,
+          user_phone: accountData.phone,
+          user_role: accountData.role,
+          address_cep: addressData.cep,
+          address_state: addressData.state,
+          address_street: addressData.street,
+          address_complement: addressData.complement,
+          address_number: addressData.number,
+          address_city: addressData.city,
+          address_neighborhood: addressData.neighborhood,
+          address_property_type: addressData.property_type,
+        },
+        token
+      );
+      setUser((prev: any) => ({
+        ...prev,
+        address: { ...addressData },
+      }));
+      setEditingAddress(false);
+      setPopup({ type: "success", message: "Endereço salvo com sucesso!" });
+    } catch (err) {
+      setPopup({ type: "error", message: "Erro ao salvar endereço." });
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  // Popup de feedback
+  const Popup = ({ type, message }: { type: "error" | "success"; message: string }) => (
+    <div
+      className={`fixed top-6 left-1/2 z-50 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white flex items-center gap-2
+        ${type === "error" ? "bg-red-600" : "bg-green-600"}`}
+      role="alert"
+    >
+      {type === "error" ? (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      ) : (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+      <span>{message}</span>
+      <button className="ml-2" onClick={() => setPopup(null)}>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  );
+
   return (
-    <div>
-      <ProfileTopBar />
+    <div className="min-h-screen bg-gray-50 relative">
       <LeftBar selectedTab="Profile" />
-      <div className="flex justify-center gap-3 pt-14 md:ml-24 lg:ml-64 lg:gap-12">
-        <div className="flex w-full max-w-4xl flex-col gap-5 p-5">
-          <ProfileTopSection />
-          <ProfileStatsSection />
-          {/* <ProfileFriendsSection /> */}
+
+      {popup && <Popup type={popup.type} message={popup.message} />}
+
+      {loading && (
+        <div className="fixed inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 border-4 border-t-[#0000C8] border-gray-200 rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-700">Carregando perfil...</p>
+          </div>
         </div>
+      )}
+
+      <div className="flex flex-col items-center justify-center pt-16 md:ml-64 px-2 sm:px-4">
+        {/* Seção: Conta */}
+        <section className="bg-white rounded-xl shadow p-4 sm:p-8 w-full max-w-4xl mt-8 relative">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 text-[#0000C8]">
+            Dados de contato
+          </h2>
+
+          {!editingAccount ? (
+            <button
+              onClick={() => setEditingAccount(true)}
+              className="absolute top-6 right-6 flex items-center gap-1 px-3 py-1 rounded-md bg-[#0000C8] text-white text-xs sm:text-sm font-semibold shadow hover:bg-[#2323e6] transition"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m-2 2h6" />
+              </svg>
+              Editar
+            </button>
+          ) : (
+            <div className="absolute top-6 right-6 flex gap-2">
+              <button
+                onClick={handleSaveAccount}
+                disabled={!allFieldsFilled(accountData) || !allAddressFieldsFilled(addressData) || savingAccount}
+                className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs sm:text-sm font-semibold shadow transition
+                  ${allFieldsFilled(accountData) && allAddressFieldsFilled(addressData) && !savingAccount
+                    ? "bg-green-600 text-white hover:bg-green-700"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+              >
+                {savingAccount ? (
+                  <svg className="animate-spin w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                Salvar
+              </button>
+              <button
+                onClick={() => {
+                  setEditingAccount(false);
+                  setAccountData({
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    role: user.role,
+                    created_at: user.created_at,
+                  });
+                }}
+                className="flex items-center gap-1 px-3 py-1 rounded-md bg-red-500 text-white text-xs sm:text-sm font-semibold shadow hover:bg-red-600 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+              </button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {[
+              { label: "Nome", key: "name" },
+              { label: "E-mail", key: "email" },
+              { label: "WhatsApp", key: "phone" },
+              { label: "Cargo", key: "role" },
+              { label: "Data de Cadastro", key: "created_at", readonly: true },
+            ].map(({ label, key, readonly }) => (
+              <div key={key}>
+                <span className="block text-gray-400 text-xs">{label}</span>
+                {editingAccount && !readonly ? (
+                  key === "phone" ? (
+                    <InputMask
+                      mask="(99) 99999-9999"
+                      value={accountData[key]}
+                      onChange={(e) => setAccountData({ ...accountData, [key]: e.target.value })}
+                    >
+                      {(inputProps: any) => (
+                        <input
+                          {...inputProps}
+                          className="border p-1 rounded w-full"
+                          placeholder="(11) 91234-5678"
+                        />
+                      )}
+                    </InputMask>
+                  ) : (
+                    <input
+                      className="border p-1 rounded w-full"
+                      value={accountData[key]}
+                      onChange={(e) =>
+                        setAccountData({ ...accountData, [key]: e.target.value })
+                      }
+                    />
+                  )
+                ) : (
+                  <span className="font-semibold">
+                    {key === "created_at"
+                      ? new Date(user?.created_at).toLocaleDateString("pt-BR")
+                      : user?.[key]}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Seção: Endereço */}
+        <section className="bg-white rounded-xl shadow p-4 sm:p-8 w-full max-w-4xl mt-8 relative">
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 text-[#0000C8]">
+            Endereço para entrega das recompensas
+          </h2>
+
+          {!editingAddress ? (
+            <button
+              onClick={() => setEditingAddress(true)}
+              className="absolute top-6 right-6 flex items-center gap-1 px-3 py-1 rounded-md bg-[#0000C8] text-white text-xs sm:text-sm font-semibold shadow hover:bg-[#2323e6] transition"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m-2 2h6" />
+              </svg>
+              Editar
+            </button>
+          ) : (
+            <div className="absolute top-6 right-6 flex gap-2">
+              <button
+                onClick={handleSaveAddress}
+                disabled={!allAddressFieldsFilled(addressData) || !allFieldsFilled(accountData) || savingAddress}
+                className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs sm:text-sm font-semibold shadow transition
+                  ${allAddressFieldsFilled(addressData) && allFieldsFilled(accountData) && !savingAddress
+                    ? "bg-green-600 text-white hover:bg-green-700"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+              >
+                {savingAddress ? (
+                  <svg className="animate-spin w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                Salvar
+              </button>
+              <button
+                onClick={() => {
+                  setEditingAddress(false);
+                  setAddressData({ ...user.address });
+                }}
+                className="flex items-center gap-1 px-3 py-1 rounded-md bg-red-500 text-white text-xs sm:text-sm font-semibold shadow hover:bg-red-600 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancelar
+              </button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {[
+              { key: "street", label: "Rua" },
+              { key: "number", label: "Número" },
+              { key: "complement", label: "Complemento" },
+              { key: "property_type", label: "Tipo de Imóvel" },
+              { key: "cep", label: "CEP" },
+              { key: "neighborhood", label: "Bairro" },
+              { key: "city", label: "Cidade" },
+              { key: "state", label: "Estado" },
+            ].map(({ key, label }) => (
+              <div key={key}>
+                <span className="block text-gray-400 text-xs">{label}</span>
+                {editingAddress ? (
+                  key === "property_type" ? (
+                    <select
+                      className="border p-1 rounded w-full"
+                      value={addressData[key]}
+                      onChange={(e) =>
+                        setAddressData({ ...addressData, [key]: e.target.value })
+                      }
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="Comercial">Comercial</option>
+                      <option value="Residencial">Residencial</option>
+                    </select>
+                  ) : key === "cep" ? (
+                    <InputMask
+                      mask="99999-999"
+                      value={addressData[key]}
+                      onChange={(e) => setAddressData({ ...addressData, [key]: e.target.value })}
+                    >
+                      {(inputProps: any) => (
+                        <input
+                          {...inputProps}
+                          className="border p-1 rounded w-full"
+                          placeholder="01310-000"
+                        />
+                      )}
+                    </InputMask>
+                  ) : (
+                    <input
+                      className="border p-1 rounded w-full"
+                      value={addressData[key]}
+                      onChange={(e) =>
+                        setAddressData({ ...addressData, [key]: e.target.value })
+                      }
+                    />
+                  )
+                ) : (
+                  <span className="font-semibold">{user?.address?.[key]}</span>
+                )}
+              </div>
+            ))}
+            <div className="sm:col-span-2">
+              <span className="block text-gray-400 text-xs">País</span>
+              <span className="font-semibold">Brasil</span>
+            </div>
+          </div>
+        </section>
       </div>
-      <div className="pt-[90px]"></div>
+
       <BottomBar selectedTab="Profile" />
     </div>
   );
 };
 
 export default Profile;
-
-const ProfileTopBar = () => {
-  return (
-    <div className="fixed left-0 right-0 top-0 flex h-16 items-center justify-between border-b-2 border-gray-200 bg-white px-5 text-xl font-bold text-gray-300 md:hidden">
-      <div className="invisible" aria-hidden={true}>
-        <SettingsGearSvg />
-      </div>
-      <span className="text-gray-400">Profile</span>
-      <Link href="/settings/account">
-        <SettingsGearSvg />
-        <span className="sr-only">Settings</span>
-      </Link>
-    </div>
-  );
-};
-
-const ProfileTopSection = () => {
-  const router = useRouter();
-  const loggedIn = true; // Valor estático para loggedIn
-  const name = "John Doe"; // Valor estático para name
-  const username = "johndoe"; // Valor estático para username
-  const joinedAt = "January 2022"; // Valor estático para joinedAt
-  const followingCount = 10; // Valor estático para followingCount
-  const followersCount = 5; // Valor estático para followersCount
-  //const language = { name: "English", code: "en" }; // Valor estático para language
-
-  useEffect(() => {
-    if (!loggedIn) {
-      void router.push("/");
-    }
-  }, [loggedIn, router]);
-
-  return (
-    <section className="flex flex-row-reverse border-b-2 border-gray-200 pb-8 md:flex-row md:gap-8">
-      <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-gray-400 text-3xl font-bold text-gray-400 md:h-44 md:w-44 md:text-7xl">
-        {username.charAt(0).toUpperCase()}
-      </div>
-      <div className="flex grow flex-col justify-between gap-3">
-        <div className="flex flex-col gap-2">
-          <div>
-            <h1 className="text-2xl font-bold">{name}</h1>
-            <div className="text-sm text-gray-400">{username}</div>
-          </div>
-          <div className="flex items-center gap-3">
-            <ProfileTimeJoinedSvg />
-            <span className="text-gray-500">{`Joined ${joinedAt}`}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <ProfileFriendsSvg />
-            <span className="text-gray-500">{`${followingCount} Following / ${followersCount} Followers`}</span>
-          </div>
-        </div>
-
-        {/* <Flag language={language} width={40} /> */}
-      </div>
-      <Link
-        href="/settings/account"
-        className="hidden items-center gap-2 self-start rounded-2xl border-b-4 border-blue-500 bg-blue-400 px-5 py-3 font-bold uppercase text-white transition hover:brightness-110 md:flex"
-      >
-        <EditPencilSvg />
-        Edit profile
-      </Link>
-    </section>
-  );
-};
-
-const ProfileStatsSection = () => {
-  const streak = 5; // Valor estático para streak
-  const totalXp = 125; // Valor estático para totalXp
-  const league = "Bronze"; // Valor estático para league
-  const top3Finishes = 0; // Valor estático para top3Finishes
-
-  return (
-    <section>
-      <h2 className="mb-5 text-2xl font-bold">Statistics</h2>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex gap-2 rounded-2xl border-2 border-gray-200 p-2 md:gap-3 md:px-6 md:py-4">
-          {/* {streak === 0 ? <EmptyFireSvg /> : <FireSvg />} */}
-          <div className="flex flex-col">
-            <span
-              className={[
-                "text-xl font-bold",
-                // "text-gray-400" : "",
-              ].join(" ")}
-            >
-              {streak}
-            </span>
-            <span className="text-sm text-gray-400 md:text-base">
-              Day streak
-            </span>
-          </div>
-        </div>
-        <div className="flex gap-2 rounded-2xl border-2 border-gray-200 p-2 md:gap-3 md:px-6 md:py-4">
-          <LightningProgressSvg size={35} />
-          <div className="flex flex-col">
-            <span className="text-xl font-bold">{totalXp}</span>
-            <span className="text-sm text-gray-400 md:text-base">Total XP</span>
-          </div>
-        </div>
-        <div className="flex gap-2 rounded-2xl border-2 border-gray-200 p-2 md:gap-3 md:px-6 md:py-4">
-          <BronzeLeagueSvg width={25} height={35} />
-          <div className="flex flex-col">
-            <span className="text-xl font-bold">{league}</span>
-            <span className="text-sm text-gray-400 md:text-base">
-              Current league
-            </span>
-          </div>
-        </div>
-        <div className="flex gap-2 rounded-2xl border-2 border-gray-200 p-2 md:gap-3 md:px-6 md:py-4">
-          {top3Finishes === 0 ? <EmptyMedalSvg /> : <EmptyMedalSvg />}
-          <div className="flex flex-col">
-            <span
-              className={[
-                "text-xl font-bold",
-                top3Finishes === 0 ? "text-gray-400" : "",
-              ].join(" ")}
-            >
-              {top3Finishes}
-            </span>
-            <span className="text-sm text-gray-400 md:text-base">
-              Top 3 finishes
-            </span>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// const ProfileFriendsSection = () => {
-//   const [state, setState] = useState<"FOLLOWING" | "FOLLOWERS">("FOLLOWING");
-//   return (
-//     <section>
-//       <h2 className="mb-5 text-2xl font-bold">Friends</h2>
-//       <div className="rounded-2xl border-2 border-gray-200">
-//         <div className="flex">
-//           <button
-//             className={[
-//               "flex w-1/2 items-center justify-center border-b-2 py-3 font-bold uppercase hover:border-blue-400 hover:text-blue-400",
-//               state === "FOLLOWING"
-//                 ? "border-blue-400 text-blue-400"
-//                 : "border-gray-200 text-gray-400",
-//             ].join(" ")}
-//             onClick={() => setState("FOLLOWING")}
-//           >
-//             Following
-//           </button>
-//           <button
-//             className={[
-//               "flex w-1/2 items-center justify-center border-b-2 py-3 font-bold uppercase hover:border-blue-400 hover:text-blue-400",
-//               state === "FOLLOWERS"
-//                 ? "border-blue-400 text-blue-400"
-//                 : "border-gray-200 text-gray-400",
-//             ].join(" ")}
-//             onClick={() => setState("FOLLOWERS")}
-//           >
-//             Followers
-//           </button>
-//         </div>
-//         <div className="flex items-center justify-center py-10 text-center text-gray-500">
-//           {state === "FOLLOWING"
-//             ? "Not following anyone yet"
-//             : "No followers yet"}
-//         </div>
-//       </div>
-//     </section>
-//   );
-// };

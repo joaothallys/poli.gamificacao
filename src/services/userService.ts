@@ -246,6 +246,70 @@ const userService = {
       handleApiError(error, "Failed to create user");
     }
   },
+
+  getUsers: async (
+    user_uuid: string,
+    perPage: number,
+    page: number,
+    token: string
+  ) => {
+    try {
+      if (!validator.isUUID(user_uuid)) {
+        throw new Error("Invalid user UUID");
+      }
+      const params = new URLSearchParams({
+        user_uuid,
+      }).toString();
+
+      const response = await api.get(`/get-users?${params}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          accept: "application/json",
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      handleApiError(error, "Failed to fetch users");
+    }
+  },
+
+  putUser: async (
+    uuid_user: string,
+    params: {
+      address_cep: string;
+      address_state: string;
+      user_email: string;
+      user_role: string;
+      address_street: string;
+      address_complement: string;
+      address_number: string;
+      address_city: string;
+      address_neighborhood: string;
+      address_property_type: string;
+      user_phone: string;
+      user_name: string;
+    },
+    token: string
+  ) => {
+    try {
+      const body = new URLSearchParams({
+        ...params,
+      }).toString();
+
+      const response = await api.put(`/put-user/${uuid_user}`, body, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      handleApiError(error, "Failed to update user");
+    }
+  },
+
 };
 
 export default userService;
