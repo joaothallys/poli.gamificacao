@@ -1,0 +1,26 @@
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from git tag
+        id: get_version
+        run: |
+          echo "VERSION=$(git describe --tags --abbrev=0 || echo 'main')" >> $GITHUB_ENV
+
+      - name: Build
+        env:
+          NEXT_PUBLIC_APP_VERSION: ${{ env.VERSION }}
+        run: |
+          npm ci
+          npm run build
+
