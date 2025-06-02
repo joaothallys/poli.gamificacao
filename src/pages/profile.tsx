@@ -22,7 +22,7 @@ const Profile: NextPage = () => {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
     const uuid = userData.user_uuid;
-    const token = "123456";
+    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
     if (!uuid || !token) return;
 

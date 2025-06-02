@@ -15,7 +15,7 @@ import LogoutSvg from "../../public/logout.svg";
 import ProfileGraySvg from "../../public/profile-gray.svg";
 import ProfileBlueSvg from "../../public/person-icon.svg";
 
-const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "1.0.5";
 
 const bottomBarItems = [
   {
