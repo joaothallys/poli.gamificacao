@@ -3,6 +3,7 @@ import { BottomBar } from "~/components/BottomBar";
 import { LeftBar } from "~/components/LeftBar";
 import React, { useEffect, useState } from "react";
 import userService from "~/services/userService";
+import InputMask from "react-input-mask";
 
 const Profile: NextPage = () => {
   const [user, setUser] = useState<any>(null);
@@ -246,13 +247,29 @@ const Profile: NextPage = () => {
               <div key={key}>
                 <span className="block text-gray-400 text-xs">{label}</span>
                 {editingAccount && !readonly ? (
-                  <input
-                    className="border p-1 rounded w-full"
-                    value={accountData[key]}
-                    onChange={(e) =>
-                      setAccountData({ ...accountData, [key]: e.target.value })
-                    }
-                  />
+                  key === "phone" ? (
+                    <InputMask
+                      mask="(99) 99999-9999"
+                      value={accountData[key]}
+                      onChange={(e) => setAccountData({ ...accountData, [key]: e.target.value })}
+                    >
+                      {(inputProps: any) => (
+                        <input
+                          {...inputProps}
+                          className="border p-1 rounded w-full"
+                          placeholder="(11) 91234-5678"
+                        />
+                      )}
+                    </InputMask>
+                  ) : (
+                    <input
+                      className="border p-1 rounded w-full"
+                      value={accountData[key]}
+                      onChange={(e) =>
+                        setAccountData({ ...accountData, [key]: e.target.value })
+                      }
+                    />
+                  )
                 ) : (
                   <span className="font-semibold">
                     {key === "created_at"
@@ -345,6 +362,20 @@ const Profile: NextPage = () => {
                       <option value="Comercial">Comercial</option>
                       <option value="Residencial">Residencial</option>
                     </select>
+                  ) : key === "cep" ? (
+                    <InputMask
+                      mask="99999-999"
+                      value={addressData[key]}
+                      onChange={(e) => setAddressData({ ...addressData, [key]: e.target.value })}
+                    >
+                      {(inputProps: any) => (
+                        <input
+                          {...inputProps}
+                          className="border p-1 rounded w-full"
+                          placeholder="01310-000"
+                        />
+                      )}
+                    </InputMask>
                   ) : (
                     <input
                       className="border p-1 rounded w-full"
