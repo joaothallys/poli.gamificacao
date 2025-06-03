@@ -2,6 +2,7 @@ import { useState } from "react";
 import userService from "~/services/userService";
 import { toast } from "react-toastify";
 import InputMask from "react-input-mask";
+import * as yup from "yup";
 
 // Interface for form data
 interface PostUserParams {
@@ -17,7 +18,7 @@ interface PostUserParams {
   address_property_type: string;
   user_phone: string;
   user_name: string;
-  user_position: string;
+  user_role: string;
 }
 
 interface ProfileFormModalProps {
@@ -37,7 +38,8 @@ const FormInput: React.FC<{
   type?: string;
   required?: boolean;
   disabled?: boolean;
-}> = ({ label, name, value, onChange, placeholder, type = "text", required, disabled }) => (
+  invalid?: boolean;
+}> = ({ label, name, value, onChange, placeholder, type = "text", required, disabled, invalid }) => (
   <div className="flex flex-col">
     <label className="text-xs font-medium text-gray-600 mb-1 uppercase">{label}</label>
     <input
@@ -46,14 +48,13 @@ const FormInput: React.FC<{
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      className="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none w-full"
+      className={`border rounded-lg p-2 text-sm focus:outline-none w-full ${invalid ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
       required={required}
       disabled={disabled}
     />
   </div>
 );
 
-// Component for rendering masked input fields (e.g., phone, CEP)
 const MaskedInput: React.FC<{
   label: string;
   name: string;
@@ -64,7 +65,8 @@ const MaskedInput: React.FC<{
   required?: boolean;
   disabled?: boolean;
   prefix?: React.ReactNode;
-}> = ({ label, name, value, onChange, placeholder, mask, required, disabled, prefix }) => (
+  invalid?: boolean;
+}> = ({ label, name, value, onChange, placeholder, mask, required, disabled, prefix, invalid }) => (
   <div className="flex flex-col">
     <label className="text-xs font-medium text-gray-600 mb-1 uppercase">{label}</label>
     <div className="flex items-center">
@@ -75,7 +77,7 @@ const MaskedInput: React.FC<{
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none w-full"
+        className={`border rounded-lg p-2 text-sm focus:outline-none w-full ${invalid ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
         required={required}
         disabled={disabled}
       />
@@ -93,14 +95,15 @@ const FormSelect: React.FC<{
   placeholder: string;
   required?: boolean;
   disabled?: boolean;
-}> = ({ label, name, value, onChange, options, placeholder, required, disabled }) => (
+  invalid?: boolean;
+}> = ({ label, name, value, onChange, options, placeholder, required, disabled, invalid }) => (
   <div className="flex flex-col">
     <label className="text-xs font-medium text-gray-600 mb-1 uppercase">{label}</label>
     <select
       name={name}
       value={value}
       onChange={onChange}
-      className="border border-gray-300 rounded-lg p-2 text-sm focus:outline-none"
+      className={`border rounded-lg p-2 text-sm focus:outline-none ${invalid ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
       required={required}
       disabled={disabled}
     >
@@ -113,6 +116,26 @@ const FormSelect: React.FC<{
     </select>
   </div>
 );
+
+const formSchema = yup.object().shape({
+  user_name: yup.string().required("Nome obrigatório"),
+  user_role: yup.string().required("Cargo obrigatório"),
+  user_phone: yup
+    .string()
+    .required("WhatsApp obrigatório")
+    .matches(/^\d+$/, "Somente números")
+    .min(10, "Mínimo 10 dígitos")
+    .max(11, "Máximo 11 dígitos"),
+  user_email: yup.string().email("E-mail inválido").required("E-mail obrigatório"),
+  address_street: yup.string().required("Rua obrigatória"),
+  address_number: yup.string().required("Número obrigatório"),
+  address_complement: yup.string().required("Complemento obrigatório"),
+  address_property_type: yup.string().required("Tipo obrigatório"),
+  address_cep: yup.string().required("CEP obrigatório"),
+  address_neighborhood: yup.string().required("Bairro obrigatório"),
+  address_city: yup.string().required("Cidade obrigatória"),
+  address_state: yup.string().required("Estado obrigatório"),
+});
 
 const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, userUuid, token }) => {
   // Form state
@@ -129,15 +152,22 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
     address_property_type: "",
     user_phone: "",
     user_name: "",
-    user_position: "",
+    user_role: "",
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
+  const [invalidFields, setInvalidFields] = useState<string[]>([]);
 
   // Handle form field changes
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    let { name, value } = e.target;
+    // Remove espaços e caracteres especiais do telefone
+    if (name === "user_phone") {
+      value = value.replace(/\D/g, "");
+    }
+    setFormData({ ...formData, [name]: value });
+    setInvalidFields((prev) => prev.filter((field) => field !== name));
   };
 
   // Handle form submission
@@ -147,14 +177,27 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
       return;
     }
 
+    try {
+      await formSchema.validate(formData, { abortEarly: false });
+      setInvalidFields([]);
+    } catch (err: any) {
+      if (err.inner) {
+        setInvalidFields(err.inner.map((e: any) => e.path));
+      }
+      return;
+    }
+
     setFormSubmitting(true);
     try {
-      const updatedFormData = { ...formData, uuid_user: userUuid };
-      await userService.postUser(updatedFormData, token);
+      const dataToSend = {
+        ...formData,
+        user_phone: formData.user_phone.replace(/\D/g, ""),
+        uuid_user: userUuid,
+      };
+      await userService.postUser(dataToSend, token);
       toast.success("Sucesso!");
       onClose();
     } catch (error: any) {
-      console.error("Erro ao processar:", error);
       const errorMessage =
         error.response?.data?.detail?.[0]?.msg || "Erro ao enviar dados do perfil";
       toast.error(errorMessage);
@@ -198,15 +241,17 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               placeholder="Ex.: João Pedro Marcelo"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("user_name")}
             />
             <FormInput
               label="Cargo"
-              name="user_position"
-              value={formData.user_position}
+              name="user_role"
+              value={formData.user_role}
               onChange={handleFormChange}
               placeholder="Ex.: Gerente comercial"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("user_role")}
             />
             <MaskedInput
               label="Seu WhatsApp"
@@ -217,6 +262,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               mask="99 999999999"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("user_phone")}
             />
             <div className="sm:col-span-2 md:col-span-3">
               <FormInput
@@ -228,6 +274,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
                 type="email"
                 required
                 disabled={formSubmitting}
+                invalid={invalidFields.includes("user_email")}
               />
             </div>
           </div>
@@ -245,6 +292,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               placeholder="Ex.: Av. Paulista"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_street")}
             />
             <FormInput
               label="Número"
@@ -254,6 +302,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               placeholder="Ex.: 1234"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_number")}
             />
             <FormInput
               label="Complemento"
@@ -262,6 +311,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               onChange={handleFormChange}
               placeholder="Ex.: Ap 101, Bloco B"
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_complement")}
             />
             <FormSelect
               label="Tipo"
@@ -275,6 +325,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               placeholder="Ex.: Casa, Apartamento"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_property_type")}
             />
             <MaskedInput
               label="CEP"
@@ -285,6 +336,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               mask="99999-999"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_cep")}
             />
             <FormInput
               label="Bairro"
@@ -294,6 +346,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               placeholder="Ex.: Bela Vista"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_neighborhood")}
             />
             <FormInput
               label="Cidade"
@@ -303,6 +356,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               placeholder="Ex.: São Paulo"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_city")}
             />
             <FormInput
               label="Estado"
@@ -312,6 +366,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               placeholder="Ex.: São Paulo"
               required
               disabled={formSubmitting}
+              invalid={invalidFields.includes("address_state")}
             />
             <div className="sm:col-span-2 md:col-span-3">
               <FormInput

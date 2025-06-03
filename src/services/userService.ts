@@ -195,6 +195,7 @@ const userService = {
         address_property_type,
         user_phone,
         user_name,
+        user_role,
       } = params;
 
       if (!validator.isUUID(uuid_user)) {
@@ -232,6 +233,7 @@ const userService = {
         address_property_type,
         user_phone,
         user_name,
+        user_role,
       }).toString();
 
       const response = await api.post("/post-user", body, {

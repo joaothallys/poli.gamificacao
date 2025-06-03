@@ -66,7 +66,7 @@ const Profile: NextPage = () => {
         {
           user_name: accountData.name,
           user_email: accountData.email,
-          user_phone: accountData.phone,
+          user_phone: accountData.phone.replace(/\D/g, ""),
           user_role: accountData.role,
           address_cep: addressData.cep,
           address_state: addressData.state,
