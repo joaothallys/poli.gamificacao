@@ -18,14 +18,12 @@ const Profile: NextPage = () => {
   const [savingAddress, setSavingAddress] = useState(false);
 
   const [popup, setPopup] = useState<{ type: "error" | "success"; message: string } | null>(null);
+  const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
+  const uuid = userData.user_uuid;
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-    const uuid = userData.user_uuid;
-    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
-
     if (!uuid || !token) return;
-
     userService
       .getUsers(uuid, 1, 1, token)
       .then((res: any) => {
@@ -63,7 +61,6 @@ const Profile: NextPage = () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
       const uuid = userData.user_uuid;
-      const token = "123456";
       await userService.putUser(
         uuid,
         {
