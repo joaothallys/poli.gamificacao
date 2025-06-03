@@ -18,7 +18,7 @@ const Leaderboard: NextPage = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [lastPage, setLastPage] = useState<number>(1);
 
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "123456";
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");

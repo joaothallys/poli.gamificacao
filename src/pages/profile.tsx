@@ -100,7 +100,6 @@ const Profile: NextPage = () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
       const uuid = userData.user_uuid;
-      const token = "123456";
       await userService.putUser(
         uuid,
         {
