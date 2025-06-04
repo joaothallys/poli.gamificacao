@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import InputMask from "react-input-mask";
 import * as yup from "yup";
 
-// Interface for form data
 interface PostUserParams {
   address_cep: string;
   address_state: string;
@@ -28,7 +27,6 @@ interface ProfileFormModalProps {
   token: string;
 }
 
-// Component for rendering form input fields
 const FormInput: React.FC<{
   label: string;
   name: string;
@@ -85,7 +83,6 @@ const MaskedInput: React.FC<{
   </div>
 );
 
-// Component for rendering select fields
 const FormSelect: React.FC<{
   label: string;
   name: string;
@@ -137,8 +134,44 @@ const formSchema = yup.object().shape({
   address_state: yup.string().required("Estado obrigatório"),
 });
 
+const FormTerms: React.FC<{
+  checked: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required: boolean;
+  disabled: boolean;
+}> = ({ checked, onChange, required, disabled }) => (
+  <div className="mb-4">
+    <div className="font-semibold text-sm mb-1">Termos de uso</div>
+    <div className="text-xs text-gray-700 mb-2">
+      Para participar do programa, é necessário concordar com os termos de uso e a política de privacidade.
+      Ao aceitar, você declara estar ciente e de acordo com as regras e condições estabelecidas.
+      Saiba mais em nossa <a
+        href="https://poli.digital/policoins/termos-e-condicoes"
+        className="font-bold underline text-blue-900"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Política do Programa
+      </a>.
+    </div>
+    <div className="flex items-center">
+      <input
+        type="checkbox"
+        id="accept_terms"
+        checked={checked}
+        onChange={onChange}
+        className="mr-2 accent-blue-700"
+        disabled={disabled}
+        required={required}
+      />
+      <label htmlFor="accept_terms" className="text-sm text-gray-900 select-none">
+        Aceito os termos de uso.
+      </label>
+    </div>
+  </div>
+);
+
 const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, userUuid, token }) => {
-  // Form state
   const [formData, setFormData] = useState<PostUserParams>({
     address_cep: "",
     address_state: "",
@@ -156,13 +189,13 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
   });
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
-  // Handle form field changes
+
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     let { name, value } = e.target;
-    // Remove espaços e caracteres especiais do telefone
     if (name === "user_phone") {
       value = value.replace(/\D/g, "");
     }
@@ -170,10 +203,18 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
     setInvalidFields((prev) => prev.filter((field) => field !== name));
   };
 
-  // Handle form submission
+  const handleTermsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAcceptTerms(e.target.checked);
+  };
+
   const handleSubmit = async () => {
     if (!userUuid) {
       toast.error("UUID do usuário não encontrado. Faça login novamente.");
+      return;
+    }
+
+    if (!acceptTerms) {
+      toast.error("Você precisa aceitar os termos de uso para continuar.");
       return;
     }
 
@@ -195,6 +236,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
         uuid_user: userUuid,
       };
       await userService.postUser(dataToSend, token);
+      await userService.postUserTermsAcceptance(userUuid, token);
       toast.success("Sucesso!");
       onClose();
     } catch (error: any) {
@@ -208,7 +250,6 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
 
   if (!isOpen) return null;
 
-  // Brazilian flag SVG for WhatsApp field
   const brazilFlag = (
     <span
       className="inline-block w-5 h-5 mr-2"
@@ -373,14 +414,20 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
                 label="País"
                 name="user_country"
                 value="Brasil"
-                onChange={() => {}} // Disabled field, no change handler needed
+                onChange={() => { }}
                 placeholder=""
                 disabled
               />
             </div>
           </div>
 
-          {/* Submit Button */}
+          <FormTerms
+            checked={acceptTerms}
+            onChange={handleTermsChange}
+            required
+            disabled={formSubmitting}
+          />
+
           <div className="flex justify-end">
             <button
               onClick={handleSubmit}
