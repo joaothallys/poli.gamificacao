@@ -245,7 +245,7 @@ const Profile: NextPage = () => {
                 {editingAccount && !readonly ? (
                   key === "phone" ? (
                     <InputMask
-                      mask="(99) 99999-9999"
+                      mask="+99 (99) 99999-9999"
                       value={accountData[key]}
                       onChange={(e) => setAccountData({ ...accountData, [key]: e.target.value })}
                     >
@@ -253,7 +253,7 @@ const Profile: NextPage = () => {
                         <input
                           {...inputProps}
                           className="border p-1 rounded w-full"
-                          placeholder="(11) 91234-5678"
+                          placeholder="+55 (11) 91234-5678"
                         />
                       )}
                     </InputMask>
