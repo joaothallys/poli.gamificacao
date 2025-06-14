@@ -55,7 +55,13 @@ const Login = () => {
         </div>
         <div className="w-full md:w-[50%] p-8 flex flex-col justify-center text-black">
           <h4 className="text-center text-3xl font-semibold text-gray-700">Seja bem-vindo!</h4>
-          <div className="mt-4">
+          <form
+            className="mt-4"
+            onSubmit={e => {
+              e.preventDefault();
+              handleLogin();
+            }}
+          >
             <div className={`relative ${error ? 'border-red-500' : 'border-gray-300'} border rounded-lg`}>
               <Mail className="absolute left-3 top-3.5 text-gray-400" size={20} />
               <input
@@ -77,6 +83,7 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
               <button
+                type="button"
                 className="absolute right-3 top-3.5 text-gray-400"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -89,12 +96,13 @@ const Login = () => {
               <Link href="https://app-spa.poli.digital/recover-password" target="_blank" className="text-blue-500">Esqueci minha senha</Link>
             </div>
             <button
+              type="submit"
               className="w-full mt-4 rounded-lg bg-[#0000C8] py-3 font-bold text-white hover:bg-blue-700"
-              onClick={handleLogin}
+              disabled={isLoading}
             >
               {isLoading ? <LoadingSpinner /> : "Acessar"}
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </main>

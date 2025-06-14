@@ -18,14 +18,12 @@ const Profile: NextPage = () => {
   const [savingAddress, setSavingAddress] = useState(false);
 
   const [popup, setPopup] = useState<{ type: "error" | "success"; message: string } | null>(null);
+  const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
+  const uuid = userData.user_uuid;
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
-    const uuid = userData.user_uuid;
-    const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
-
     if (!uuid || !token) return;
-
     userService
       .getUsers(uuid, 1, 1, token)
       .then((res: any) => {
@@ -63,13 +61,12 @@ const Profile: NextPage = () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
       const uuid = userData.user_uuid;
-      const token = "123456";
       await userService.putUser(
         uuid,
         {
           user_name: accountData.name,
           user_email: accountData.email,
-          user_phone: accountData.phone,
+          user_phone: accountData.phone.replace(/\D/g, ""),
           user_role: accountData.role,
           address_cep: addressData.cep,
           address_state: addressData.state,
@@ -103,7 +100,6 @@ const Profile: NextPage = () => {
     try {
       const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
       const uuid = userData.user_uuid;
-      const token = "123456";
       await userService.putUser(
         uuid,
         {
@@ -249,7 +245,7 @@ const Profile: NextPage = () => {
                 {editingAccount && !readonly ? (
                   key === "phone" ? (
                     <InputMask
-                      mask="(99) 99999-9999"
+                      mask="+99 (99) 99999-9999"
                       value={accountData[key]}
                       onChange={(e) => setAccountData({ ...accountData, [key]: e.target.value })}
                     >
@@ -257,7 +253,7 @@ const Profile: NextPage = () => {
                         <input
                           {...inputProps}
                           className="border p-1 rounded w-full"
-                          placeholder="(11) 91234-5678"
+                          placeholder="+55 (11) 91234-5678"
                         />
                       )}
                     </InputMask>
