@@ -3,6 +3,7 @@ import userService from "~/services/userService";
 import { toast } from "react-toastify";
 import InputMask from "react-input-mask";
 import * as yup from "yup";
+import axios from "axios";
 
 interface PostUserParams {
   address_cep: string;
@@ -58,13 +59,14 @@ const MaskedInput: React.FC<{
   name: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
   placeholder: string;
   mask: string;
   required?: boolean;
   disabled?: boolean;
   prefix?: React.ReactNode;
   invalid?: boolean;
-}> = ({ label, name, value, onChange, placeholder, mask, required, disabled, prefix, invalid }) => (
+}> = ({ label, name, value, onChange, onBlur, placeholder, mask, required, disabled, prefix, invalid }) => (
   <div className="flex flex-col">
     <label className="text-xs font-medium text-gray-600 mb-1 uppercase">{label}</label>
     <div className="flex items-center">
@@ -74,6 +76,7 @@ const MaskedInput: React.FC<{
         name={name}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         placeholder={placeholder}
         className={`border rounded-lg p-2 text-sm focus:outline-none w-full ${invalid ? "border-red-500 ring-2 ring-red-200" : "border-gray-300"}`}
         required={required}
@@ -191,6 +194,35 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
   const [invalidFields, setInvalidFields] = useState<string[]>([]);
   const [acceptTerms, setAcceptTerms] = useState(false);
 
+  const [addressLocked, setAddressLocked] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
+
+  const handleCepBlur = async () => {
+    const cep = formData.address_cep.replace(/\D/g, "");
+    if (cep.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+      if (res.data.erro) {
+        toast.error("CEP não encontrado.");
+        setAddressLocked(false);
+        return;
+      }
+      setFormData((prev) => ({
+        ...prev,
+        address_street: res.data.logradouro || "",
+        address_neighborhood: res.data.bairro || "",
+        address_city: res.data.localidade || "",
+        address_state: res.data.uf || "",
+      }));
+      setAddressLocked(true);
+    } catch {
+      toast.error("Erro ao consultar o CEP.");
+      setAddressLocked(false);
+    } finally {
+      setCepLoading(false);
+    }
+  };
 
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -198,6 +230,9 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
     let { name, value } = e.target;
     if (name === "user_phone") {
       value = value.replace(/\D/g, "");
+    }
+    if (name === "address_cep") {
+      setAddressLocked(false);
     }
     setFormData({ ...formData, [name]: value });
     setInvalidFields((prev) => prev.filter((field) => field !== name));
@@ -325,6 +360,18 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
             ENDEREÇO PARA ENTREGA DAS RECOMPENSAS
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
+            <MaskedInput
+              label="CEP"
+              name="address_cep"
+              value={formData.address_cep}
+              onChange={handleFormChange}
+              onBlur={handleCepBlur}
+              placeholder="Ex.: 01310-000"
+              mask="99999-999"
+              required
+              disabled={formSubmitting}
+              invalid={invalidFields.includes("address_cep")}
+            />
             <FormInput
               label="Rua"
               name="address_street"
@@ -332,7 +379,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               onChange={handleFormChange}
               placeholder="Ex.: Av. Paulista"
               required
-              disabled={formSubmitting}
+              disabled={formSubmitting || addressLocked}
               invalid={invalidFields.includes("address_street")}
             />
             <FormInput
@@ -351,7 +398,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               value={formData.address_complement}
               onChange={handleFormChange}
               placeholder="Ex.: Ap 101, Bloco B"
-              disabled={formSubmitting}
+              disabled={formSubmitting} // Não bloqueia nunca!
               invalid={invalidFields.includes("address_complement")}
             />
             <FormSelect
@@ -368,17 +415,6 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               disabled={formSubmitting}
               invalid={invalidFields.includes("address_property_type")}
             />
-            <MaskedInput
-              label="CEP"
-              name="address_cep"
-              value={formData.address_cep}
-              onChange={handleFormChange}
-              placeholder="Ex.: 01310-000"
-              mask="99999-999"
-              required
-              disabled={formSubmitting}
-              invalid={invalidFields.includes("address_cep")}
-            />
             <FormInput
               label="Bairro"
               name="address_neighborhood"
@@ -386,7 +422,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               onChange={handleFormChange}
               placeholder="Ex.: Bela Vista"
               required
-              disabled={formSubmitting}
+              disabled={formSubmitting || addressLocked}
               invalid={invalidFields.includes("address_neighborhood")}
             />
             <FormInput
@@ -396,7 +432,7 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               onChange={handleFormChange}
               placeholder="Ex.: São Paulo"
               required
-              disabled={formSubmitting}
+              disabled={formSubmitting || addressLocked}
               invalid={invalidFields.includes("address_city")}
             />
             <FormInput
@@ -404,9 +440,9 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
               name="address_state"
               value={formData.address_state}
               onChange={handleFormChange}
-              placeholder="Ex.: São Paulo"
+              placeholder="Ex.: SP"
               required
-              disabled={formSubmitting}
+              disabled={formSubmitting || addressLocked}
               invalid={invalidFields.includes("address_state")}
             />
             <div className="sm:col-span-2 md:col-span-3">
