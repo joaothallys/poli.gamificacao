@@ -16,7 +16,7 @@ export default function Document() {
                 j.async=true;
                 j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
                 f.parentNode.insertBefore(j,f);
-              })(window,document,'script','dataLayer','GTM-M2LRLQN');
+              })(window,document,'script','dataLayer','GTM-MS9MQSWS');
             `,
           }}
         />
@@ -26,7 +26,7 @@ export default function Document() {
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-M2LRLQN"
+            src="https://www.googletagmanager.com/ns.html?id=GTM-MS9MQSWS"
             height="0"
             width="0"
             style={{ display: "none", visibility: "hidden" }}
