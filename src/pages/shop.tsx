@@ -199,6 +199,8 @@ const Shop: NextPage = () => {
                                 width={192}
                                 height={192}
                                 loading="lazy"
+                                placeholder="blur"
+                                blurDataURL="https://cdn.polichat.io/gamification/49-kit6caixas_1745502208.png"
                                 onError={(e) => (e.currentTarget.src = "/fallback-image.jpg")}
                               />
                             </div>
