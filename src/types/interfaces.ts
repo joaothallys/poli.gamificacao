@@ -64,4 +64,5 @@ export interface PostUserParams {
   address_property_type: string;
   user_phone: string;
   user_name: string;
+  user_role: string;
 }

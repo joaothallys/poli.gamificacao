@@ -154,7 +154,8 @@ const Home: NextPage = () => {
               </div>
             </div>
 
-            <div className="flex flex-col items-start w-full lg:w-auto">
+            {/* Right side: Policoins and Levels */}
+            <div className="flex flex-col items-start w-full lg:w-auto gap-4">
               {/* Seus Policoins */}
               <div className="flex justify-between w-full mb-2">
                 <div className="relative flex items-center">
@@ -167,12 +168,9 @@ const Home: NextPage = () => {
                     i
                   </div>
                   {showTooltip && (
-                    <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10">
+                    <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10 max-w-[220px] w-max break-words whitespace-normal shadow-lg">
                       <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-[#F5F5F5] border-b-8 border-b-transparent" />
-                      <div className="flex flex-col gap-0.5 max-w-[200px]">
-                        <span className="whitespace-nowrap">Os seus Policoins podem levar</span>
-                        <span className="whitespace-nowrap">até 1 dia para serem atualizados.</span>
-                      </div>
+                      <span className="break-words whitespace-normal">Os seus Policoins podem levar até 1 dia para serem atualizados.</span>
                     </div>
                   )}
                 </div>
@@ -181,7 +179,40 @@ const Home: NextPage = () => {
                 </div>
               </div>
 
-              {/* Novo bloco: Seu Nível */}
+              {/* Níveis de Policoins */}
+              <div className="w-full lg:w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200 mb-4">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Níveis de Policoins</h2>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { name: "Starter", min: 0, max: 4999, icon: "/inicio.svg" },
+                    { name: "Bronze", min: 5000, max: 14999, icon: "/bronze.svg" },
+                    { name: "Prata", min: 15000, max: 49999, icon: "/prata.svg" },
+                    { name: "Ouro", min: 50000, max: 99999, icon: "/ouro.svg" },
+                    { name: "Diamante", min: 100000, max: 499999, icon: "/diamante.svg" },
+                    { name: "UCE", min: 500000, max: Infinity, icon: "/uce.svg" },
+                  ].map((level) => (
+                    <div key={level.name} className="flex items-center gap-2">
+                      <img
+                        src={level.icon}
+                        alt={`${level.name} Icon`}
+                        className="w-8 h-8"
+                        onError={(e) => {
+                          console.error(`Failed to load image for level ${level.name}: ${level.icon}`);
+                          e.currentTarget.src = "/fallback.svg";
+                        }}
+                      />
+                      <span className="font-medium text-gray-800">{level.name}</span>
+                      <span className="text-gray-600 text-sm ml-2">
+                        {level.max === Infinity
+                          ? `Acima de ${formatNumber(level.min)}`
+                          : `Acima ${formatNumber(level.min)} até ${formatNumber(level.max)}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Seu Nível */}
               <div className="w-full lg:w-[300px] bg-white p-4 rounded-lg shadow-md border border-gray-200 mb-4">
                 <div className="flex flex-col items-center mb-2">
                   <h2 className="text-xl font-bold text-gray-700">Seu Nível</h2>
@@ -244,7 +275,6 @@ const Home: NextPage = () => {
         </>
       )}
 
-      {/* Footer with Terms of Use Message and Profile Form */}
       <div className="relative">
         <BottomBar selectedTab="Home" />
         <ProfileFormModal
@@ -260,6 +290,12 @@ const Home: NextPage = () => {
 
 const capitalizeFirstLetter = (string: string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
+
+function formatNumbersInText(text: string) {
+  return text.replace(/\d{4,}/g, (match) =>
+    Number(match).toLocaleString("pt-BR")
+  );
+}
 
 const CategorySection = ({ category, subThemes }: { category: string; subThemes: SubTheme }) => {
   const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
@@ -326,7 +362,7 @@ const CategorySection = ({ category, subThemes }: { category: string; subThemes:
                         {capitalizeFirstLetter(mission.subTheme.replace(/_/g, " "))}
                       </p>
                       <p className="text-gray-600 text-sm">
-                        Nível {mission.nivel}: {capitalizeFirstLetter(mission.descricao)} • (Ganhe{" "}
+                        Nível {mission.nivel}: {capitalizeFirstLetter(formatNumbersInText(mission.descricao))} • (Ganhe{" "}
                         {formatNumber(mission.objetivo)} Policoins)
                       </p>
                       <div className="relative h-4 bg-gray-200 rounded-full w-full">
@@ -391,9 +427,9 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
                 i
               </div>
               {showTooltip && (
-                <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10 max-w-[200px]">
+                <div className="absolute left-full ml-3 top-1/2 transform -translate-y-1/2 bg-[#F5F5F5] text-gray-700 text-sm p-3 rounded-lg z-10 max-w-[220px] w-max break-words whitespace-normal shadow-lg">
                   <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-full w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-[#F5F5F5] border-b-8 border-b-transparent" />
-                  <span className="whitespace-nowrap">{tooltip}</span>
+                  <span className="break-words whitespace-normal">{tooltip}</span>
                 </div>
               )}
             </>
@@ -402,7 +438,7 @@ const SubThemeSection = ({ subTheme, missions }: { subTheme: string; missions: M
       </div>
       <div className="flex flex-col gap-2">
         <p className="text-gray-700 font-medium">
-          Nível {currentMission.nivel}: {capitalizeFirstLetter(currentMission.descricao)}
+          Nível {currentMission.nivel}: {capitalizeFirstLetter(formatNumbersInText(currentMission.descricao))}
         </p>
         <div className="relative h-4 bg-gray-200 rounded-full w-full">
           <div
