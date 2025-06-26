@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import InputMask from "react-input-mask";
 import * as yup from "yup";
 import axios from "axios";
+import { PhoneValidationModal } from "./PhoneValidationModal";
 
 interface PostUserParams {
   address_cep: string;
@@ -197,6 +198,21 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
   const [addressLocked, setAddressLocked] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
 
+  // Pegue do cache/localStorage
+  const userCache = JSON.parse(localStorage.getItem("user_data") || "{}");
+  const phoneValidated = userCache?.phone_validated === true;
+  const cachedPhone = userCache?.phone || "";
+
+  const [showPhoneModal, setShowPhoneModal] = useState(!phoneValidated);
+  const [validatedPhone, setValidatedPhone] = useState<string>(cachedPhone);
+
+  // Quando validar, preenche o campo e fecha o modal
+  const handlePhoneValidated = (phone: string) => {
+    setValidatedPhone(phone);
+    setShowPhoneModal(false);
+    setFormData(prev => ({ ...prev, user_phone: phone }));
+  };
+
   const handleCepBlur = async () => {
     const cep = formData.address_cep.replace(/\D/g, "");
     if (cep.length !== 8) return;
@@ -296,186 +312,185 @@ const ProfileFormModal: React.FC<ProfileFormModalProps> = ({ isOpen, onClose, us
   );
 
   return (
-    <div className="fixed inset-0 bg-gray-50 bg-opacity-90 flex items-center justify-center z-50 px-2 sm:px-4 py-4">
-      <div className="bg-white shadow-lg w-full max-w-[90vw] sm:max-w-[80vw] md:max-w-[900px] lg:max-w-[1100px] rounded-lg overflow-y-auto max-h-[90vh]" style={{ borderRadius: "8px" }}>
-        <div className="p-4 sm:p-6">
-          {/* Logo */}
-          <div className="flex justify-center mb-3">
-            <img src="/poli.svg" alt="Poli Logo" className="h-8 w-auto" />
-          </div>
+    <>
+      <PhoneValidationModal
+        isOpen={showPhoneModal}
+        onClose={() => { setShowPhoneModal(false); onClose(); }}
+        userUuid={userUuid || userCache.user_uuid}
+        token={token}
+        onValidated={handlePhoneValidated}
+        initialPhone={cachedPhone}
+      />
+      {!showPhoneModal && (
+        <div className="fixed inset-0 bg-gray-50 bg-opacity-90 flex items-center justify-center z-50 px-2 sm:px-4 py-4">
+          <div className="bg-white shadow-lg w-full max-w-[90vw] sm:max-w-[80vw] md:max-w-[900px] lg:max-w-[1100px] rounded-lg overflow-y-auto max-h-[90vh]" style={{ borderRadius: "8px" }}>
+            <div className="p-4 sm:p-6">
+              {/* Logo */}
+              <div className="flex justify-center mb-3">
+                <img src="/poli.svg" alt="Poli Logo" className="h-8 w-auto" />
+              </div>
 
-          {/* Contact Information Section */}
-          <h2 className="text-base sm:text-lg font-bold text-blue-900 mb-4">
-            DADOS DE CONTATO
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
-            <FormInput
-              label="Nome Completo"
-              name="user_name"
-              value={formData.user_name}
-              onChange={handleFormChange}
-              placeholder="Ex.: João Pedro Marcelo"
-              required
-              disabled={formSubmitting}
-              invalid={invalidFields.includes("user_name")}
-            />
-            <FormInput
-              label="Cargo"
-              name="user_role"
-              value={formData.user_role}
-              onChange={handleFormChange}
-              placeholder="Ex.: Gerente comercial"
-              required
-              disabled={formSubmitting}
-              invalid={invalidFields.includes("user_role")}
-            />
-            <MaskedInput
-              label="Seu WhatsApp"
-              name="user_phone"
-              value={formData.user_phone}
-              onChange={handleFormChange}
-              placeholder="21 983770123"
-              mask="99 999999999"
-              required
-              disabled={formSubmitting}
-              invalid={invalidFields.includes("user_phone")}
-            />
-            <div className="sm:col-span-2 md:col-span-3">
-              <FormInput
-                label="Seu E-mail"
-                name="user_email"
-                value={formData.user_email}
-                onChange={handleFormChange}
-                placeholder="exemplo@hotmail.com"
-                type="email"
+              {/* Contact Information Section */}
+              <h2 className="text-base sm:text-lg font-bold text-blue-900 mb-4">
+                DADOS DE CONTATO
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
+                <FormInput
+                  label="Nome Completo"
+                  name="user_name"
+                  value={formData.user_name}
+                  onChange={handleFormChange}
+                  placeholder="Ex.: João Pedro Marcelo"
+                  required
+                  disabled={formSubmitting}
+                  invalid={invalidFields.includes("user_name")}
+                />
+                <FormInput
+                  label="Cargo"
+                  name="user_role"
+                  value={formData.user_role}
+                  onChange={handleFormChange}
+                  placeholder="Ex.: Gerente comercial"
+                  required
+                  disabled={formSubmitting}
+                  invalid={invalidFields.includes("user_role")}
+                />
+                <FormInput
+                  label="Seu WhatsApp"
+                  name="user_phone"
+                  value={validatedPhone.replace(/^55/, "")}
+                  onChange={() => {}}
+                  placeholder=""
+                  disabled
+                />
+                <div className="sm:col-span-2 md:col-span-3">
+                  <FormInput
+                    label="Seu E-mail"
+                    name="user_email"
+                    value={formData.user_email}
+                    onChange={handleFormChange}
+                    placeholder="exemplo@hotmail.com"
+                    type="email"
+                    required
+                    disabled={formSubmitting}
+                    invalid={invalidFields.includes("user_email")}
+                  />
+                </div>
+              </div>
+
+              {/* Address Section */}
+              <h2 className="text-base sm:text-lg font-bold text-blue-900 mb-4">
+                ENDEREÇO PARA ENTREGA DAS RECOMPENSAS
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
+                <MaskedInput
+                  label="CEP"
+                  name="address_cep"
+                  value={formData.address_cep}
+                  onChange={handleFormChange}
+                  onBlur={handleCepBlur}
+                  placeholder="Ex.: 01310-000"
+                  mask="99999-999"
+                  required
+                  disabled={formSubmitting}
+                  invalid={invalidFields.includes("address_cep")}
+                />
+                <FormInput
+                  label="Rua"
+                  name="address_street"
+                  value={formData.address_street}
+                  onChange={handleFormChange}
+                  placeholder="Ex.: Av. Paulista"
+                  required
+                  disabled={formSubmitting || addressLocked}
+                  invalid={invalidFields.includes("address_street")}
+                />
+                <FormInput
+                  label="Complemento"
+                  name="address_complement"
+                  value={formData.address_complement}
+                  onChange={handleFormChange}
+                  placeholder="Ex.: Ap 101, Bloco B"
+                  disabled={formSubmitting} // Não bloqueia nunca!
+                  invalid={invalidFields.includes("address_complement")}
+                />
+                <FormSelect
+                  label="Tipo"
+                  name="address_property_type"
+                  value={formData.address_property_type}
+                  onChange={handleFormChange}
+                  options={[
+                    { value: "Comercial", label: "Comercial" },
+                    { value: "Residencial", label: "Residencial" },
+                  ]}
+                  placeholder="Ex.: Casa, Apartamento"
+                  required
+                  disabled={formSubmitting}
+                  invalid={invalidFields.includes("address_property_type")}
+                />
+                <FormInput
+                  label="Bairro"
+                  name="address_neighborhood"
+                  value={formData.address_neighborhood}
+                  onChange={handleFormChange}
+                  placeholder="Ex.: Bela Vista"
+                  required
+                  disabled={formSubmitting || addressLocked}
+                  invalid={invalidFields.includes("address_neighborhood")}
+                />
+                <FormInput
+                  label="Cidade"
+                  name="address_city"
+                  value={formData.address_city}
+                  onChange={handleFormChange}
+                  placeholder="Ex.: São Paulo"
+                  required
+                  disabled={formSubmitting || addressLocked}
+                  invalid={invalidFields.includes("address_city")}
+                />
+                <FormInput
+                  label="Estado"
+                  name="address_state"
+                  value={formData.address_state}
+                  onChange={handleFormChange}
+                  placeholder="Ex.: SP"
+                  required
+                  disabled={formSubmitting || addressLocked}
+                  invalid={invalidFields.includes("address_state")}
+                />
+                <div className="sm:col-span-2 md:col-span-3">
+                  <FormInput
+                    label="País"
+                    name="user_country"
+                    value="Brasil"
+                    onChange={() => { }}
+                    placeholder=""
+                    disabled
+                  />
+                </div>
+              </div>
+
+              <FormTerms
+                checked={acceptTerms}
+                onChange={handleTermsChange}
                 required
                 disabled={formSubmitting}
-                invalid={invalidFields.includes("user_email")}
               />
+
+              <div className="flex justify-end">
+                <button
+                  onClick={handleSubmit}
+                  disabled={formSubmitting}
+                  className={`bg-blue-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-900 transition-colors ${formSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {formSubmitting ? "Enviando..." : "Salvar e continuar"}
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* Address Section */}
-          <h2 className="text-base sm:text-lg font-bold text-blue-900 mb-4">
-            ENDEREÇO PARA ENTREGA DAS RECOMPENSAS
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6">
-            <MaskedInput
-              label="CEP"
-              name="address_cep"
-              value={formData.address_cep}
-              onChange={handleFormChange}
-              onBlur={handleCepBlur}
-              placeholder="Ex.: 01310-000"
-              mask="99999-999"
-              required
-              disabled={formSubmitting}
-              invalid={invalidFields.includes("address_cep")}
-            />
-            <FormInput
-              label="Rua"
-              name="address_street"
-              value={formData.address_street}
-              onChange={handleFormChange}
-              placeholder="Ex.: Av. Paulista"
-              required
-              disabled={formSubmitting || addressLocked}
-              invalid={invalidFields.includes("address_street")}
-            />
-            <FormInput
-              label="Número"
-              name="address_number"
-              value={formData.address_number}
-              onChange={handleFormChange}
-              placeholder="Ex.: 1234"
-              required
-              disabled={formSubmitting}
-              invalid={invalidFields.includes("address_number")}
-            />
-            <FormInput
-              label="Complemento"
-              name="address_complement"
-              value={formData.address_complement}
-              onChange={handleFormChange}
-              placeholder="Ex.: Ap 101, Bloco B"
-              disabled={formSubmitting} // Não bloqueia nunca!
-              invalid={invalidFields.includes("address_complement")}
-            />
-            <FormSelect
-              label="Tipo"
-              name="address_property_type"
-              value={formData.address_property_type}
-              onChange={handleFormChange}
-              options={[
-                { value: "Comercial", label: "Comercial" },
-                { value: "Residencial", label: "Residencial" },
-              ]}
-              placeholder="Ex.: Casa, Apartamento"
-              required
-              disabled={formSubmitting}
-              invalid={invalidFields.includes("address_property_type")}
-            />
-            <FormInput
-              label="Bairro"
-              name="address_neighborhood"
-              value={formData.address_neighborhood}
-              onChange={handleFormChange}
-              placeholder="Ex.: Bela Vista"
-              required
-              disabled={formSubmitting || addressLocked}
-              invalid={invalidFields.includes("address_neighborhood")}
-            />
-            <FormInput
-              label="Cidade"
-              name="address_city"
-              value={formData.address_city}
-              onChange={handleFormChange}
-              placeholder="Ex.: São Paulo"
-              required
-              disabled={formSubmitting || addressLocked}
-              invalid={invalidFields.includes("address_city")}
-            />
-            <FormInput
-              label="Estado"
-              name="address_state"
-              value={formData.address_state}
-              onChange={handleFormChange}
-              placeholder="Ex.: SP"
-              required
-              disabled={formSubmitting || addressLocked}
-              invalid={invalidFields.includes("address_state")}
-            />
-            <div className="sm:col-span-2 md:col-span-3">
-              <FormInput
-                label="País"
-                name="user_country"
-                value="Brasil"
-                onChange={() => { }}
-                placeholder=""
-                disabled
-              />
-            </div>
-          </div>
-
-          <FormTerms
-            checked={acceptTerms}
-            onChange={handleTermsChange}
-            required
-            disabled={formSubmitting}
-          />
-
-          <div className="flex justify-end">
-            <button
-              onClick={handleSubmit}
-              disabled={formSubmitting}
-              className={`bg-blue-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-900 transition-colors ${formSubmitting ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              {formSubmitting ? "Enviando..." : "Salvar e continuar"}
-            </button>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 };
 
