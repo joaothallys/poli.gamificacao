@@ -65,6 +65,10 @@ export const PhoneValidationModal: React.FC<PhoneValidationModalProps> = ({
       );
       if (res.status === 200) {
         toast.success("Telefone validado com sucesso!");
+        const userCache = JSON.parse(localStorage.getItem("user_data") || "{}");
+        userCache.phone_validated = true;
+        userCache.phone = "55" + phone.replace(/\D/g, "");
+        localStorage.setItem("user_data", JSON.stringify(userCache));
         onValidated("55" + phone.replace(/\D/g, ""));
         onClose();
       } else {

@@ -9,6 +9,7 @@ import Bau from "~/components/Bau";
 import BauCheio from "~/components/BauCheio";
 import ProfileFormModal from "~/components/ProfileFormModal";
 import { Mission, SubTheme, MetaProgress, LevelInfo } from "~/types/interfaces";
+import { PhoneValidationModal } from "~/components/PhoneValidationModal";
 
 const levels = [
   { name: "Starter", min: 0, max: 4999 },
@@ -54,9 +55,10 @@ const Home: NextPage = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [userUuid, setUserUuid] = useState<string | null>(null);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [token] = useState<string>(process.env.NEXT_PUBLIC_API_TOKEN || "default_token");
   const [currentPoints, setCurrentPoints] = useState<number | null>(null);
-
-  const token = process.env.NEXT_PUBLIC_API_TOKEN || "default_token";
+  const [cachedPhone, setCachedPhone] = useState<string>("");
 
   useEffect(() => {
     const userData = localStorage.getItem("user_data");
@@ -65,8 +67,12 @@ const Home: NextPage = () => {
         const parsedData = JSON.parse(userData);
         setCustomerId(parsedData?.first_account ?? null);
         setUserUuid(parsedData?.user_uuid ?? null);
+        setCachedPhone(parsedData?.phone ?? "");
         const acceptTerms = parsedData?.accept_terms ?? false;
         setShowTerms(acceptTerms === false); // Modal aparece se termos não foram aceitos
+        if (parsedData?.phone_validated === false && parsedData?.accept_terms === true) {
+          setShowPhoneModal(true);
+        }
       } catch (error) {
         console.error("Erro ao parsear dados do usuário:", error);
       }
@@ -273,6 +279,20 @@ const Home: NextPage = () => {
           <div className="pt-[90px]"></div>
           <LoginScreen loginScreenState={loginScreenState} setLoginScreenState={setLoginScreenState} />
         </>
+      )}
+
+      {/* Modal de validação de telefone */}
+      {showPhoneModal && userUuid && (
+        <PhoneValidationModal
+          isOpen={showPhoneModal}
+          onClose={() => setShowPhoneModal(false)}
+          userUuid={userUuid}
+          token={token}
+          onValidated={(phone) => {
+            setShowPhoneModal(false);
+          }}
+          initialPhone={cachedPhone}
+        />
       )}
 
       <div className="relative">
