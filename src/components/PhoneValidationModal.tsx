@@ -86,12 +86,6 @@ export const PhoneValidationModal: React.FC<PhoneValidationModalProps> = ({
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30">
       <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-xs flex flex-col items-center relative">
-        <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
-          onClick={onClose}
-        >
-          ×
-        </button>
         <div className="mb-4 flex flex-col items-center">
           <div className="bg-blue-100 rounded-full p-3 mb-2">
             <svg width={32} height={32} fill="none" viewBox="0 0 24 24">
