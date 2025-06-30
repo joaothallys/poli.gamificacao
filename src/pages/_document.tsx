@@ -21,6 +21,20 @@ export default function Document() {
           }}
         />
         {/* End Google Tag Manager */}
+
+        {/* UserGuiding Script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(u,g,i,d,e){
+                u[e]=u[e]||function(){(u[e].q=u[e].q||[]).push(arguments)};
+                var s=g.createElement(i);s.async=1;s.src=d;
+                var x=g.getElementsByTagName(i)[0];x.parentNode.insertBefore(s,x);
+              })(window,document,'script','https://r.userguiding.com/DZA102653JU4ID.js','userGuiding');
+            `,
+          }}
+        />
+        {/* End UserGuiding Script */}
       </Head>
       <body>
         {/* Google Tag Manager (noscript) */}

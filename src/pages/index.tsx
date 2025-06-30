@@ -9,6 +9,13 @@ import logo from "../../public/img3.svg";
 import rewardsIllustration from "../../public/img4.svg";
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
 
+declare global {
+  interface Window {
+    _poli?: any;
+    userGuiding?: any;
+  }
+}
+
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -24,11 +31,44 @@ const Login = () => {
     }
   }, [router]);
 
+  // Função para disparar o UserGuiding
+  function triggerGuiding() {
+    if (typeof window !== "undefined" && window.userGuiding && window._poli) {
+      window.userGuiding.identify(window._poli.id, {
+        userId: window._poli.id,
+        name: window._poli.name,
+        email: window._poli.email,
+        company_name: window._poli.account?.name,
+        user_role: window._poli.user_permission,
+        company_id: window._poli.account?.id,
+        created_at: window._poli.user_created_at,
+        user_age_days: window._poli.user_age_days,
+        company_created_at: window._poli.account?.created_at,
+      });
+    }
+  }
+
   const handleLogin = async () => {
     setIsLoading(true);
     try {
       const response = await authService.login(email, password);
       if (response.authorized) {
+        const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+        window._poli = {
+          id: userData.user_uuid,
+          name: userData.name,
+          email: userData.email,
+          account: {
+            name: userData.company_name,
+            id: userData.company_id,
+            created_at: userData.company_created_at,
+          },
+          user_permission: userData.roles_uuid,
+          user_created_at: userData.created_at,
+          user_age_days: userData.user_age_days,
+        };
+        setTimeout(triggerGuiding, 5000);
+
         await router.push("/home");
       } else {
         setError("Email/Senha inválidos");
