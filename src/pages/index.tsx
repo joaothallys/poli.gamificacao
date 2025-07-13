@@ -16,6 +16,14 @@ declare global {
   }
 }
 
+interface AuthResponse {
+  authorized: boolean;
+  detail?: any;
+  error?: {
+    detail: string;
+  };
+}
+
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -51,26 +59,29 @@ const Login = () => {
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      const response = await authService.login(email, password);
+      const response: AuthResponse = await authService.login(email, password);
       if (response.authorized) {
-        const userData = JSON.parse(localStorage.getItem("user_data") || "{}");
+        // Aqui você salva os dados do usuário
+        const userData = response.detail;
+        localStorage.setItem("user_data", JSON.stringify(userData));
         window._poli = {
           id: userData.user_uuid,
           name: userData.name,
           email: userData.email,
           account: {
-            name: userData.company_name,
-            id: userData.company_id,
-            created_at: userData.company_created_at,
+            name: userData.company_name || "", // ajuste se necessário
+            id: userData.accounts_uuid,
+            created_at: userData.created_at,
           },
           user_permission: userData.roles_uuid,
-          user_created_at: userData.created_at,
-          user_age_days: userData.user_age_days,
+          user_created_at: userData.user_created_at,
+          user_age_days: userData.user_age_days || 0, // ajuste se necessário
         };
         setTimeout(triggerGuiding, 5000);
 
         await router.push("/home");
       } else {
+        // Captura o erro específico da API
         setError("Email/Senha inválidos");
       }
     } catch (err) {
