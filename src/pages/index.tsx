@@ -69,19 +69,18 @@ const Login = () => {
           name: userData.name,
           email: userData.email,
           account: {
-            name: userData.company_name || "", // ajuste se necessário
+            name: userData.company_name || "",
             id: userData.accounts_uuid,
             created_at: userData.created_at,
           },
           user_permission: userData.roles_uuid,
           user_created_at: userData.user_created_at,
-          user_age_days: userData.user_age_days || 0, // ajuste se necessário
+          user_age_days: userData.user_age_days || 0,
         };
         setTimeout(triggerGuiding, 5000);
 
         await router.push("/home");
       } else {
-        // Captura o erro específico da API
         setError("Email/Senha inválidos");
       }
     } catch (err) {
