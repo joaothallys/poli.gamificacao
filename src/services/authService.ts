@@ -4,6 +4,7 @@ import type { UserData } from "~/interfaces/UserData";
 interface AuthResponse {
   authorized: boolean;
   message: string;
+  detail?: UserData;
 }
 
 const authService = {
@@ -27,8 +28,7 @@ const authService = {
         const roles = userData.roles_deprecated_id.split(",");
         if (roles.includes("1") || roles.includes("3")) {
           localStorage.setItem("user_data", JSON.stringify(userData));
-          
-          return { authorized: true, message: "Usuário autorizado." };
+          return { authorized: true, message: "Usuário autorizado.", detail: userData };
         } else {
           console.error("Você não tem permissão.");
           return { authorized: false, message: "Você não tem permissão." };
@@ -43,7 +43,12 @@ const authService = {
         return { authorized: false, message: "Usuário não autenticado." };
       }
 
-      throw new Error(error.response?.data?.message || "Erro ao autenticar.");
+      // Retorna mensagem de erro da API se disponível
+      if (error.response?.data?.detail) {
+        return { authorized: false, message: error.response.data.detail };
+      }
+
+      return { authorized: false, message: error.response?.data?.message || "Erro ao autenticar." };
     }
   },
 };
